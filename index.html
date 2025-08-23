@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Estudios - Contabilidad y Auditoría</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 40; justify-content: center; align-items: center; }
+        .modal-content { background-color: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); width: 90%; max-width: 500px; transform: scale(0.95); opacity: 0; transition: all 0.2s ease-in-out; }
+        .modal-backdrop.active { display: flex; }
+        .modal-backdrop.active .modal-content { transform: scale(1); opacity: 1; }
+        #subject-detail, #user-session-ui { display: none; }
+        .unlocked { background-color: #4f46e5 !important; color: white !important; }
+        .unlocked:hover { background-color: #4338ca !important; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center gap-4 text-sm">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="user-session-ui" class="flex items-center gap-3">
+                    <span id="user-email-display" class="font-semibold"></span>
+                    <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+                </div>
+                <button id="show-login-modal-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    👤 Iniciar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <main id="main-menu">
+            <header class="text-center mb-6">
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">Guía de Estudios para el Examen de Fin de Carrera</h1>
+                <p class="text-xl text-slate-600 mt-2">Carrera: Contabilidad y Auditoría</p>
+            </header>
+
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
+                <h2 class="text-2xl font-bold text-indigo-600 mb-3">Objetivo</h2>
+                <p class="text-slate-700">Informar a los estudiantes en proceso de titulación sobre los contenidos a considerar para la preparación del examen de fin de carrera.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <button data-subject="free" data-key="cont_general" class="subject-button bg-indigo-600 text-white p-6 rounded-lg shadow-lg hover:bg-indigo-700 transition-transform transform hover:-translate-y-1">
+                    <h3 class="text-xl font-bold">CONTABILIDAD GENERAL</h3>
+                    <span class="text-sm bg-green-400 text-green-900 font-semibold px-3 py-1 rounded-full mt-3 inline-block">Acceso Gratis</span>
+                </button>
+                <button data-subject="paid" data-key="costos" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">CONTABILIDAD DE COSTOS Y AVANZADOS</h3></button>
+                <button data-subject="paid" data-key="presupuestos" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">PRESUPUESTOS</h3></button>
+                <button data-subject="paid" data-key="finan_1" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">ADMINISTRACIÓN FINANCIERA I</h3></button>
+                <button data-subject="paid" data-key="finan_2" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">ADMINISTRACIÓN FINANCIERA II</h3></button>
+                <button data-subject="paid" data-key="sup_1" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">CONTABILIDAD SUPERIOR I</h3></button>
+                <button data-subject="paid" data-key="sup_2" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">CONTABILIDAD SUPERIOR II</h3></button>
+                <button data-subject="paid" data-key="tributaria" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">ADMINISTRACIÓN TRIBUTARIA</h3></button>
+                <button data-subject="paid" data-key="aud_finan" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">AUDITORÍA FINANCIERA I y II</h3></button>
+                <button data-subject="paid" data-key="aud_gestion" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">AUDITORÍA DE GESTIÓN</h3></button>
+                <button data-subject="paid" data-key="aud_forense" class="subject-button bg-slate-700 text-white p-6 rounded-lg shadow-lg hover:bg-slate-800 transition-transform transform hover:-translate-y-1"><h3 class="text-xl font-bold">AUDITORÍA FORENSE</h3></button>
+                
+                <button data-subject="paid" data-key="simulacro" class="subject-button bg-red-600 text-white p-6 rounded-lg shadow-lg hover:bg-red-700 transition-transform transform hover:-translate-y-1 flex flex-col items-center justify-center">
+                    <h3 class="text-xl font-bold text-center">Simulacro Examen Complexivo</h3>
+                    <span class="text-sm bg-yellow-400 text-yellow-900 font-semibold px-3 py-1 rounded-full mt-3 inline-block">¡Ponte a Prueba!</span>
+                </button>
+            </div>
+        </main>
+        
+        <section id="subject-detail">
+            <header class="mb-8">
+                 <button id="back-to-menu" class="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition mb-6">&larr; Volver al Menú</button>
+                <h1 id="detail-title" class="text-3xl font-bold text-slate-900"></h1>
+                <p id="detail-profesor" class="text-lg text-slate-600 mt-1"></p>
+            </header>
+            <div class="bg-white p-8 rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold text-indigo-600 mb-4">Temas</h2>
+                <div id="detail-temas" class="list-disc list-inside space-y-3 text-slate-700 text-lg"></div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-12 text-slate-500">
+            <p>&copy; 2025 | Desarrollado por <strong>Easyclass</strong></p>
+        </footer>
+    </div>
+    
+    <div id="auth-modal" class="modal-backdrop">
+        <div class="modal-content relative">
+            <button class="close-modal absolute top-3 right-4 text-3xl text-slate-400 hover:text-slate-700">&times;</button>
+            <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Iniciar Sesión</h2>
+            <div id="auth-feedback" class="text-center mb-4 text-sm font-semibold"></div>
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-slate-600">Correo Electrónico</label>
+                    <input type="email" id="email" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-600">Contraseña</label>
+                    <input type="password" id="password" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="free-modal" class="modal-backdrop">
+        <div class="modal-content text-center relative">
+            <button class="close-modal absolute top-4 right-4 text-3xl text-slate-500 hover:text-slate-800">&times;</button>
+            <h2 class="text-2xl font-bold text-green-600 mb-2">¡Acceso Gratuito!</h2>
+            <p class="text-slate-600 mb-4">Esta primera materia es gratis como demostración.</p>
+            <p class="text-slate-800 font-semibold mb-6">Habilita el acceso a todas las demás guías iniciando sesión o contáctanos.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="go-to-subject-btn" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto">
+                    <a href="z1.html">Ir a la Materia</a>
+                </button>
+                <a href="https://wa.me/TUNUMERO?text=Hola,%20quisiera%20habilitar%20el%20acceso%20completo%20a%20la%20guía%20de%20estudios." target="_blank" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition w-full sm:w-auto">
+                    Contactar por WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="paid-modal" class="modal-backdrop">
+        <div class="modal-content text-center relative">
+             <button class="close-modal absolute top-4 right-4 text-3xl text-slate-500 hover:text-slate-800">&times;</button>
+            <h2 class="text-2xl font-bold text-indigo-600 mb-2">Habilita el Acceso Completo</h2>
+            <p class="text-slate-600 mb-6">Accede a esta y todas las demás guías por un único pago de <span class="font-bold text-xl">$10 USD</span>.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                 <a href="https://wa.me/573044435307?text=Hola,%20quisiera%20habilitar%20el%20acceso%20completo%20a%20la%20guía%20de%20estudios." target="_blank" class="bg-green-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-600 transition text-lg w-full sm:w-auto">
+                    Habilitar por WhatsApp
+                </a>
+                <button id="login-from-paid-modal" class="bg-slate-700 text-white font-bold py-3 px-8 rounded-lg hover:bg-slate-800 transition text-lg w-full sm:w-auto">
+                    Iniciar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // --- CONFIGURACIÓN DE SUPABASE ---
+        const SUPABASE_URL = 'https://cgpioodxsryqfyofjfvy.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncGlvb2R4c3J5cWZ5b2ZqZnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MTY2MjIsImV4cCI6MjA2MzI5MjYyMn0.TB8MmMzMc18hktGiWal_Fjmuq4ptqp7pz3mi0o8LJLY';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- BASE DE DATOS DE CONTENIDO ---
+        const subjectsData = {
+            cont_general: { title: "ASIGNATURA: CONTABILIDAD GENERAL", profesor: "Profesor: Mg. Carolina Jaramillo (cjaramillo@uisrael.edu.ec)", temas: "<ul><li>Ciclo contable: Jornalización, Mayorización, Ajustes</li><li>Balance de Comprobación</li><li>Cierre de libros</li><li>Estados financieros</li></ul>" },
+            costos: { title: "ASIGNATURA: CONTABILIDAD DE COSTOS Y AVANZADOS", profesor: "Profesor: Mg. Carolina Jaramillo (cjaramillo@uisrael.edu.ec)", temas: "<ul><li>Clasificación de los costos</li><li>Estados financieros de empresas industriales</li><li>Sistema de costos por órdenes de trabajo</li><li>Sistema de costos por procesos</li><li>Costo estándar de producción</li><li>Relación Costo – Volumen - Utilidad</li></ul>" },
+            presupuestos: { title: "ASIGNATURA: PRESUPUESTOS", profesor: "Profesor: Mg. Carlos Arias (carias@uisrael.edu.ec)", temas: "<ul><li>Conceptos y generalidades</li><li>Clasificación de los presupuestos</li><li>Presupuesto personal y familiar</li><li>Presupuestos comerciales, producción, gastos, ventas, etc.</li><li>Métodos para hacer proyecciones</li><li>Presupuesto maestro y estados financieros proyectados</li></ul>" },
+            finan_1: { title: "ASIGNATURA: ADMINISTRACIÓN FINANCIERA I", profesor: "Profesor: Mg. Carlos Arias (carias@uisrael.edu.ec)", temas: "<ul><li>Análisis Financiero vertical y horizontal</li><li>Cálculo de razones financieras (liquidez, actividad, endeudamiento, rentabilidad)</li><li>Elaboración del informe de análisis financiero</li></ul>" },
+            finan_2: { title: "ASIGNATURA: ADMINISTRACIÓN FINANCIERA II", profesor: "Profesor: Mg. Carlos Arias (carias@uisrael.edu.ec)", temas: "<ul><li>Fuentes de Financiamiento (Corto y Largo Plazo)</li><li>Valoración de Activos Financieros (bonos, acciones)</li><li>Evaluación financiera de Inversiones (VAN, TIR, etc.)</li></ul>" },
+            sup_1: { title: "ASIGNATURA: CONTABILIDAD SUPERIOR I", profesor: "Profesor: Mg. William Ortega (wortega@uisrael.edu.ec)", temas: "<ul><li>Marco conceptual de las NIIF</li><li>NIC 1 y Secciones 3-6 de NIIF para Pymes (Presentación de EEFF)</li><li>NIC 2 y Sección 13 de NIIF para Pymes (Inventarios)</li><li>NIC 7 y Sección 7 de NIIF para Pymes (Flujos de Efectivo)</li><li>Diferencias entre NIIF completas y para Pymes</li></ul>" },
+            sup_2: { title: "ASIGNATURA: CONTABILIDAD SUPERIOR II", profesor: "Profesor: Mg. William Ortega (wortega@uisrael.edu.ec)", temas: "<ul><li>NIC 16 y Sección 17 (Propiedades, planta y equipo)</li><li>NIC 41 y Sección 34 (Activos Biológicos)</li><li>NIC 38 y Sección 18 (Activos Intangibles)</li><li>Diferencias entre NIIF completas y para Pymes</li></ul>" },
+            tributaria: { title: "ASIGNATURA: ADMINISTRACIÓN TRIBUTARIA", profesor: "Profesor: Mg. Lorena Muquis (lmuquis@uisrael.edu.ec)", temas: "<ul><li>Aspectos generales en el ámbito tributario</li><li>Impuesto a la Renta Personas Naturales</li><li>Aplicaciones Tecnológicas Formularios (SRI)</li><li>Aplicaciones Tecnológicas Anexos (SRI)</li></ul>" },
+            aud_finan: { title: "ASIGNATURA: AUDITORÍA FINANCIERA I y II", profesor: "Profesor: Mg. Andrés Ramos (aramos@uisrael.edu.ec)", temas: "<ul><li>Objetivo de la Auditoría de EEFF</li><li>Código de Ética del Contador-Auditor</li><li>Planificación y Papeles de Trabajo</li><li>Riesgos y Evidencia de Auditoría</li><li>Tipos de opinión e informes</li></ul>" },
+            aud_gestion: { title: "ASIGNATURA: AUDITORÍA DE GESTIÓN", profesor: "Profesor: Mg. Andrés Ramos (aramos@uisrael.edu.ec)", temas: "<ul><li>Objetivo y Fases de la Auditoría de Gestión</li><li>Variables que mide la Auditoría de gestión</li><li>Sistema de Control Interno</li><li>Indicadores de gestión y Hallazgos de auditoría</li></ul>" },
+            aud_forense: { title: "ASIGNATURA: AUDITORÍA FORENSE", profesor: "Profesor: Mg. Andrés Ramos (aramos@uisrael.edu.ec)", temas: "<ul><li>La auditoría forense como recurso en la determinación del fraude</li><li>Principios, riesgo y evidencia forense</li><li>Controles relacionados al fraude</li><li>Procedimientos y pruebas de auditoría forense</li><li>El informe de auditoría forense</li></ul>" },
+            simulacro: { title: "SIMULACRO DE EXAMEN COMPLEXIVO", profesor: "Coordinación Académica", temas: "<ul><li>Preguntas de selección múltiple de todas las materias.</li><li>Casos prácticos integradores.</li><li>Tiempo límite para resolución.</li><li>Resultados y retroalimentación al finalizar.</li></ul>" },
+        };
+
+        // --- MANEJO DE ELEMENTOS DEL DOM ---
+        const mainMenu = document.getElementById('main-menu');
+        const subjectDetailPage = document.getElementById('subject-detail');
+        const detailTitle = document.getElementById('detail-title');
+        const detailProfesor = document.getElementById('detail-profesor');
+        const detailTemas = document.getElementById('detail-temas');
+        const backToMenuBtn = document.getElementById('back-to-menu');
+        const subjectButtons = document.querySelectorAll('.subject-button');
+        const userSessionUI = document.getElementById('user-session-ui');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const showLoginModalButton = document.getElementById('show-login-modal-button');
+        const logoutButton = document.getElementById('logout-button');
+        const authModal = document.getElementById('auth-modal');
+        const freeModal = document.getElementById('free-modal');
+        const paidModal = document.getElementById('paid-modal');
+        const authForm = document.getElementById('auth-form');
+        const authFeedback = document.getElementById('auth-feedback');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        const goToSubjectBtn = document.getElementById('go-to-subject-btn');
+        const loginFromPaidModal = document.getElementById('login-from-paid-modal');
+
+        let currentUserSession = null;
+
+        // --- FUNCIONES ---
+        const handleLogin = async (email, password) => {
+            authFeedback.textContent = '';
+            try {
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                hideAllModals(); 
+            } catch (error) {
+                authFeedback.textContent = 'Correo o contraseña incorrectos.';
+                authFeedback.style.color = 'red';
+            }
+        };
+
+        const handleLogout = async () => {
+            await supabaseClient.auth.signOut();
+        };
+        
+        const updateUI = (session) => {
+            currentUserSession = session;
+            if (session) {
+                showLoginModalButton.style.display = 'none';
+                userSessionUI.style.display = 'flex';
+                userEmailDisplay.textContent = session.user.email;
+                unlockCourses();
+            } else {
+                showLoginModalButton.style.display = 'block';
+                userSessionUI.style.display = 'none';
+                userEmailDisplay.textContent = '';
+                lockCourses();
+            }
+        };
+        
+        const unlockCourses = () => subjectButtons.forEach(button => {
+            if (button.dataset.subject === 'paid') {
+                button.classList.remove('bg-slate-700', 'hover:bg-slate-800');
+                button.classList.add('unlocked');
+            }
+        });
+
+        const lockCourses = () => subjectButtons.forEach(button => {
+            if (button.dataset.subject === 'paid') {
+                button.classList.add('bg-slate-700', 'hover:bg-slate-800');
+                button.classList.remove('unlocked');
+            }
+        });
+
+        const showSubjectContent = (subjectKey) => {
+            const data = subjectsData[subjectKey];
+            if (!data) return;
+            detailTitle.textContent = data.title;
+            detailProfesor.textContent = data.profesor;
+            detailTemas.innerHTML = data.temas.replace(/<li>/g, '<li class="flex items-start"><span class="mr-2 text-indigo-500">&#10003;</span>');
+            mainMenu.style.display = 'none';
+            subjectDetailPage.style.display = 'block';
+            window.scrollTo(0, 0);
+        };
+        
+        const showAuthModal = () => {
+            hideAllModals();
+            authModal.classList.add('active');
+        };
+        
+        const hideAllModals = () => {
+            [authModal, freeModal, paidModal].forEach(modal => modal.classList.remove('active'));
+        };
+
+        // --- EVENT LISTENERS ---
+        showLoginModalButton.addEventListener('click', showAuthModal);
+        logoutButton.addEventListener('click', handleLogout);
+        
+        closeModalButtons.forEach(button => button.addEventListener('click', hideAllModals));
+        [authModal, freeModal, paidModal].forEach(modal => {
+            modal.addEventListener('click', e => { if (e.target === modal) hideAllModals(); });
+        });
+        
+        authForm.addEventListener('submit', e => {
+            e.preventDefault();
+            handleLogin(authForm.email.value, authForm.password.value);
+        });
+        
+        loginFromPaidModal.addEventListener('click', showAuthModal);
+
+        goToSubjectBtn.addEventListener('click', () => {
+            hideAllModals();
+            showSubjectContent('cont_general');
+        });
+
+        subjectButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const subjectType = button.dataset.subject;
+                const subjectKey = button.dataset.key;
+
+                if (subjectType === 'free') {
+                    freeModal.classList.add('active');
+                } else { // paid
+                    if (currentUserSession) {
+                        showSubjectContent(subjectKey);
+                    } else {
+                        paidModal.classList.add('active');
+                    }
+                }
+            });
+        });
+
+        backToMenuBtn.addEventListener('click', () => {
+            mainMenu.style.display = 'block';
+            subjectDetailPage.style.display = 'none';
+            window.scrollTo(0, 0);
+        });
+        
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+            updateUI(session);
+        });
+    </script>
+</body>
+</html>
