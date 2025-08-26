@@ -3,37 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Simulador Examen Complexivo: Contabilidad y Auditoría</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Professional Blue & Slate -->
+    <!-- Application Structure Plan: The application is structured as a complete exam simulation flow. It starts with an introduction screen (#start-screen) with instructions and a start button. Clicking it transitions to the main quiz interface (#quiz-screen), which displays one question at a time, a progress bar, and a countdown timer to create a realistic test environment. After completing all questions or when the time runs out, the user is taken to the results screen (#results-screen), showing their score and providing an option to review answers. A final review mode allows users to see their selections, the correct answers, and detailed explanations for each question, reinforcing learning. This structure was chosen to accurately simulate a comprehensive exam experience. -->
+    <!-- Visualization & Content Choices: 
+        - Exam Questions: 100 multiple-choice questions. Goal -> Assess/Engage. Viz/Presentation -> Interactive Quiz Module. Interaction -> User selects an answer and navigates through questions. After the quiz, a review mode shows correct/incorrect answers with explanations. Justification -> Simulates a real exam, and the post-quiz review is a powerful learning tool.
+        - Timer & Progress: A countdown timer and a visual progress bar. Goal -> Inform/Contextualize. Viz/Presentation -> Header bar. Interaction -> None (visual feedback). Justification -> Essential for a timed exam simulation, helps with time management.
+        - Results Summary: Final score and breakdown. Goal -> Inform. Viz/Presentation -> A summary card. Interaction -> Buttons to restart or review. Justification -> Provides clear, immediate feedback on performance.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 40; justify-content: center; align-items: center; }
-        .modal-backdrop.active { display: flex; }
-        .modal-content { background-color: white; padding: 2rem; border-radius: 0.75rem; }
-    
-    
-
-        .tab.active {
-            background-color: #4f46e5; /* indigo-600 */
-            color: white;
-            border-left-color: #a5b4fc; /* indigo-300 */
-        }
-        .tab {
-            transition: all 0.2s ease-in-out;
-        }
-        .content-section {
-            display: none;
-        }
-        .content-section.active {
-            display: block;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
         }
         .quiz-choice-btn {
             transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.selected {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-color: #4f46e5;
         }
         .quiz-choice-btn.correct {
             background-color: #16a34a !important; /* green-600 */
@@ -45,693 +39,428 @@
             color: white;
             border-color: #dc2626 !important;
         }
+        .progress-bar-fill {
+            transition: width 0.3s ease-in-out;
+        }
     </style>
-
 </head>
 <body class="text-slate-800">
-
-    <div class="bg-slate-800 text-white p-2 shadow-md">
+    <div class="bg-slate-800 text-white p-1 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
                 <span class="font-bold text-lg">easyclass</span>
             </div>
-            <div id="user-session" class="flex items-center gap-4 hidden">
-                <span id="user-email" class="text-sm font-medium text-slate-300"></span>
-                <button id="show-login-modal-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                    👤 Iniciar Sesión
-                </button>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
             </div>
         </div>
     </div>
 
-
-
-
-    
- 
-
-    <div id="auth-modal" class="modal-backdrop">
-        <div class="modal-content w-full max-w-md relative">
-            <button id="close-modal" class="absolute top-3 right-4 text-3xl text-slate-400 hover:text-slate-700">&times;</button>
-            <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Iniciar Sesión</h2>
-            <div id="auth-feedback" class="text-center mb-4 text-sm font-semibold"></div>
-            <form id="auth-form" class="space-y-4">
-                <input type="email" id="email" required placeholder="Correo Electrónico" class="w-full p-2 border rounded">
-                <input type="password" id="password" required placeholder="Contraseña" class="w-full p-2 border rounded">
-                <button type="submit" class="w-full py-3 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Entrar</button>
-            </form>
-        </div>
-    </div>
-    
-    <script>
-        const supabaseClient = supabase.createClient('https://cgpioodxsryqfyofjfvy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncGlvb2R4c3J5cWZ5b2ZqZnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MTY2MjIsImV4cCI6MjA2MzI5MjYyMn0.TB8MmMzMc18hktGiWal_Fjmuq4ptqp7pz3mi0o8LJLY');
+    <div id="app" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
         
-        const userSessionEl = document.getElementById('user-session');
-        const userEmailEl = document.getElementById('user-email');
-        const logoutButton = document.getElementById('show-login-modal-button');
-        
-        // --- GUARDIA DE LA PÁGINA ---
-        supabaseClient.auth.onAuthStateChange((_event, session) => {
-            if (!session) {
-                // Si el usuario ya tiene sesión, lo enviamos a la página de inicio correcta.
-                window.location.href = 'index.html';
-            } else {
-                // Si hay sesión, mostrar la información del usuario.
-                userEmailEl.textContent = session.user.email;
-                userSessionEl.classList.remove('hidden');
-            }
-        });
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <header class="text-center mb-0">
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Simulador de Examen Complexivo</h1>
+                <p class="text-lg text-slate-600 mt-1">Contabilidad y Auditoría - Ecuador</p>
+                <p class="text-lg text-slate-600 mt-0">Desarrollado por <strong>easyclass</strong></p>
+            </header>
 
-        // --- LÓGICA DEL MODAL ---
-        const showLoginModalButton = document.getElementById('show-login-modal-button');
-        const authModal = document.getElementById('auth-modal');
-        const authForm = document.getElementById('auth-form');
-        const authFeedback = document.getElementById('auth-feedback');
-        const closeModalButton = document.getElementById('close-modal');
+            <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-1">
+                ← Volver al Menú
+            </a>
 
-        const handleLogin = async (email, password) => {
-            try {
-                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                // El 'onAuthStateChange' se encargará de la redirección
-            } catch (error) {
-                authFeedback.textContent = 'Correo o contraseña incorrectos.';
-                authFeedback.style.color = 'red';
-            }
-        };
-
-        showLoginModalButton.addEventListener('click', () => authModal.classList.add('active'));
-        closeModalButton.addEventListener('click', () => authModal.classList.remove('active'));
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            handleLogin(authForm.email.value, authForm.password.value);
-        });
-    </script>
-
-       <script>
-    const studyGuideData = {
-        topics: [
-            {
-                id: 'jornalizacion',
-                title: 'Jornalización',
-                explanation: `
-                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 1: Jornalización – El Registro Original de las Transacciones</h2>
-                    <p class="mb-4">La jornalización es el punto de partida del ciclo contable. Consiste en registrar cronológicamente todas las transacciones económicas de una entidad en el libro conocido como Diario General. Cada registro, denominado "asiento de diario", representa la traducción de un evento económico al lenguaje de la contabilidad, basándose en el principio de partida doble donde $Activo = Pasivo + Patrimonio$.</p>
-                    <p class="mb-4">El proceso implica analizar cada transacción para identificar las cuentas afectadas, determinar si aumentan o disminuyen, y aplicar las reglas del débito y el crédito. Todo asiento debe estar respaldado por un documento fuente (facturas, recibos) y seguir el Plan de Cuentas de la empresa.</p>
-                    <ul class="list-disc list-inside mb-4 space-y-1">
-                        <li><b>Activos y Gastos:</b> Aumentan con un débito, disminuyen con un crédito.</li>
-                        <li><b>Pasivos, Patrimonio e Ingresos:</b> Aumentan con un crédito, disminuyen con un débito.</li>
-                    </ul>
-                `,
-                examples: [
-                    {
-                        title: 'Caso 1: Aporte de Capital Inicial',
-                        description: 'El 1 de enero, los socios de "TecnoSoluciones S.A." inician operaciones. El Socio A aporta $20,000 en efectivo y el Socio B aporta equipos de cómputo valorados en $5,000.',
-                        table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['01/01/202X', 'Efectivo', '20,000.00', ''],
-                                ['', 'Equipo de Cómputo', '5,000.00', ''],
-                                ['', 'Capital Social', '', '25,000.00'],
-                                ['', '<i>Para registrar aportes iniciales de socios.</i>', '', '']
-                            ]
-                        }
-                    },
-                    {
-                        title: 'Caso 2: Compra de Inventario a Crédito con IVA',
-                        description: 'El 5 de enero, TecnoSoluciones S.A. compra mercadería por $10,000 más 12% de IVA a su proveedor "GlobalTech", bajo condiciones 2/10, n/30.',
-                        table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['05/01/202X', 'Inventario de Mercaderías', '10,000.00', ''],
-                                ['', 'IVA Pagado (Crédito Tributario)', '1,200.00', ''],
-                                ['', 'Cuentas por Pagar a Proveedores', '', '11,200.00'],
-                                ['', '<i>Para registrar compra de inventario a crédito.</i>', '', '']
-                            ]
-                        }
-                    },
-                    {
-                        title: 'Caso 3: Venta de Servicios con IVA',
-                        description: 'El 15 de enero, la empresa presta servicios de consultoría. Un cliente paga $3,000 al contado y otro cliente queda debiendo $2,000. Ambas transacciones más 12% de IVA.',
-                         table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['15/01/202X', 'Efectivo ($3,000 x 1.12)', '3,360.00', ''],
-                                ['', 'Cuentas por Cobrar a Clientes ($2,000 x 1.12)', '2,240.00', ''],
-                                ['', 'Ingresos por Servicios', '', '5,000.00'],
-                                ['', 'IVA Cobrado (Débito Tributario)', '', '600.00'],
-                                ['', '<i>Para registrar venta de servicios.</i>', '', '']
-                            ]
-                        }
-                    },
-                     {
-                        title: 'Caso 4: Pago de Sueldos y Retenciones',
-                        description: 'El 30 de enero, se paga la nómina del mes. El gasto total en sueldos es de $4,000. Se retiene un 9.45% por aporte al seguro social ($378) y $100 de impuesto a la renta.',
-                         table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['30/01/202X', 'Gasto Sueldos y Salarios', '4,000.00', ''],
-                                ['', 'Aportes al IESS por Pagar', '', '378.00'],
-                                ['', 'Retenciones de Imp. Renta por Pagar', '', '100.00'],
-                                ['', 'Efectivo', '', '3,522.00'],
-                                ['', '<i>Para registrar pago de nómina de enero.</i>', '', '']
-                            ]
-                        }
-                    },
-                    {
-                        title: 'Caso 5: Obtención de un Préstamo Bancario',
-                        description: 'El 31 de enero, la empresa recibe un préstamo del Banco del Pacífico por $50,000 a 5 años plazo, que es depositado directamente en su cuenta corriente.',
-                         table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['31/01/202X', 'Efectivo', '50,000.00', ''],
-                                ['', 'Préstamo Bancario por Pagar (Largo Plazo)', '', '50,000.00'],
-                                ['', '<i>Para registrar obtención de préstamo bancario.</i>', '', '']
-                            ]
-                        }
-                    }
-                ],
-                quiz: [
-                    {
-                        question: 'Una empresa adquiere un vehículo por $30,000. Paga un 20% como cuota inicial en efectivo y firma un documento por pagar a 36 meses por el saldo. La transacción también está sujeta a un 12% de IVA sobre el valor total del vehículo. ¿Cuál es el asiento de diario correcto?',
-                        choices: {
-                            a: 'Vehículos $30,000 (D); Efectivo $6,000 (H); Documentos por Pagar $24,000 (H); IVA Pagado $3,600 (H).',
-                            b: 'Vehículos $33,600 (D); Efectivo $6,720 (H); Documentos por Pagar $26,880 (H).',
-                            c: 'Vehículos $30,000 (D); IVA Pagado $3,600 (D); Efectivo $6,720 (H); Documentos por Pagar $26,880 (H).'
-                        },
-                        answer: 'c',
-                        explanation: 'El costo del activo (Vehículos) es $30,000. El IVA (12%) es $3,600, un activo (débito). El total a financiar es $33,600. La cuota inicial es $33,600 * 0.20 = $6,720 (crédito a Efectivo). El saldo de $26,880 es un pasivo (crédito a Documentos por Pagar).'
-                    },
-                    {
-                        question: 'Una empresa vende mercadería por $15,000 más 12% de IVA a crédito. El costo de la mercadería es de $9,000 (sistema perpetuo). ¿Cómo se registra correctamente?',
-                        choices: {
-                            a: 'Cuentas por Cobrar $16,800 (D); Ingresos por Ventas $15,000 (H); IVA Cobrado $1,800 (H).',
-                            b: 'Cuentas por Cobrar $16,800 (D); Costo de Ventas $9,000 (D); Ingresos por Ventas $15,000 (H); IVA Cobrado $1,800 (H); Inventario $9,000 (H).',
-                            c: 'Asiento 1: Cuentas por Cobrar $16,800 (D); Ingresos por Ventas $15,000 (H); IVA Cobrado $1,800 (H). Asiento 2: Costo de Ventas $9,000 (D); Inventario $9,000 (H).'
-                        },
-                        answer: 'c',
-                        explanation: 'En el sistema perpetuo, se registran dos asientos. El primero reconoce la venta y la cuenta por cobrar. El segundo registra el costo de la venta y da de baja el inventario. La opción c) representa correctamente esta separación conceptual.'
-                    },
-                    {
-                        question: 'Se paga una póliza de seguro de 24 meses por $4,800 en efectivo. ¿Cuál es el asiento inicial?',
-                        choices: {
-                            a: 'Gasto Seguro $4,800 (D); Efectivo $4,800 (H).',
-                            b: 'Seguro Pagado por Anticipado $4,800 (D); Efectivo $4,800 (H).',
-                            c: 'Gasto Seguro $200 (D); Seguro Pagado por Anticipado $4,600 (D); Efectivo $4,800 (H).'
-                        },
-                        answer: 'b',
-                        explanation: 'El pago crea un recurso futuro. Según el principio de devengo, se registra como un activo ("Seguro Pagado por Anticipado") y el gasto se reconocerá mensualmente a través de asientos de ajuste.'
-                    },
-                    {
-                        question: 'Un cliente devuelve mercadería comprada a crédito por $1,000 (+12% IVA). El costo era de $600. ¿Cuál es el asiento correcto en un sistema perpetuo?',
-                        choices: {
-                            a: 'Devoluciones en Ventas $1,000 (D); IVA Cobrado $120 (D); Cuentas por Cobrar $1,120 (H).',
-                            b: 'Devoluciones en Ventas $1,000 (D); IVA Cobrado $120 (D); Inventario $600 (D); Cuentas por Cobrar $1,120 (H); Costo de Ventas $600 (H).',
-                            c: 'Cuentas por Cobrar $1,120 (D); Devoluciones en Ventas $1,000 (H); IVA Cobrado $120 (H).'
-                        },
-                        answer: 'b',
-                        explanation: 'Se requiere revertir ambos efectos de la venta original. Se registra la devolución y se reduce la cuenta por cobrar. Simultáneamente, la mercadería regresa al inventario (débito) y se revierte el costo de venta (crédito). La opción b) combina correctamente ambos asientos.'
-                    },
-                    {
-                        question: 'Se compra inventario a crédito por $20,000 con términos 3/15, n/45. Si se paga en 10 días, ¿cuál es el asiento de pago?',
-                        choices: {
-                            a: 'Cuentas por Pagar $20,000 (D); Efectivo $19,400 (H); Descuento en Compras $600 (H).',
-                            b: 'Cuentas por Pagar $20,000 (D); Efectivo $20,000 (H).',
-                            c: 'Cuentas por Pagar $19,400 (D); Efectivo $19,400 (H).'
-                        },
-                        answer: 'a',
-                        explanation: 'El descuento es del 3% sobre $20,000, es decir, $600. El pago en efectivo es de $19,400. El asiento debe saldar la totalidad de la deuda ($20,000), registrar la salida de efectivo y reconocer el descuento obtenido.'
-                    },
-                    {
-                        question: 'Una empresa declara y paga dividendos en efectivo por $10,000. ¿Cuál es el impacto en la ecuación contable?',
-                        choices: {
-                            a: 'Disminuye Activos (Efectivo) y disminuye Patrimonio (Utilidades Retenidas).',
-                            b: 'Disminuye Activos (Efectivo) y aumenta Pasivos (Dividendos por Pagar).',
-                            c: 'Aumenta Gastos (Gasto por Dividendo) y disminuye Activos (Efectivo).'
-                        },
-                        answer: 'a',
-                        explanation: 'El pago de dividendos es una distribución de utilidades, no un gasto. Reduce directamente los activos (Efectivo) y el patrimonio (Utilidades Retenidas).'
-                    },
-                    {
-                        question: 'Se reciben $12,000 de un cliente como pago anticipado por un proyecto de 6 meses. ¿Cuál es el asiento al recibir el efectivo?',
-                        choices: {
-                            a: 'Efectivo $12,000 (D); Ingresos por Servicios $12,000 (H).',
-                            b: 'Efectivo $12,000 (D); Ingresos no Devengados $12,000 (H).',
-                            c: 'Cuentas por Cobrar $12,000 (D); Ingresos por Servicios $12,000 (H).'
-                        },
-                        answer: 'b',
-                        explanation: 'El ingreso no se ha ganado todavía. Al recibir el efectivo, se crea un pasivo ("Ingresos no Devengados") que representa la obligación de prestar el servicio en el futuro.'
-                    },
-                    {
-                        question: 'Se compra maquinaria por $100,000, pagando además $5,000 por transporte y $3,000 por instalación. ¿Por qué valor se debe registrar la maquinaria?',
-                        choices: {
-                            a: 'Un débito a Maquinaria por $100,000 y débitos a gastos por $8,000.',
-                            b: 'Un débito a Maquinaria por $108,000.',
-                            c: 'Un débito a Maquinaria por $100,000 y un débito a Gastos Operativos por $8,000.'
-                        },
-                        answer: 'b',
-                        explanation: 'El principio de costo histórico dicta que un activo fijo se registra por todos los costos necesarios para ponerlo en funcionamiento. Esto incluye precio de compra, transporte e instalación. El costo total capitalizable es $108,000.'
-                    },
-                    {
-                        question: 'Una empresa recompra 1,000 de sus propias acciones a $10 cada una, usando efectivo. ¿Cuál es el asiento de diario?',
-                        choices: {
-                            a: 'Gasto por Recompra de Acciones $10,000 (D); Efectivo $10,000 (H).',
-                            b: 'Utilidades Retenidas $10,000 (D); Efectivo $10,000 (H).',
-                            c: 'Acciones en Tesorería $10,000 (D); Efectivo $10,000 (H).'
-                        },
-                        answer: 'c',
-                        explanation: 'Las acciones recompradas se registran en una cuenta de contra-patrimonio llamada "Acciones en Tesorería". Se debita por el costo de adquisición y se acredita el efectivo utilizado.'
-                    },
-                    {
-                        question: 'Un abogado presta servicios por $2,500 en enero. La factura llega el 31 de enero pero se pagará en febrero. ¿Qué asiento se registra el 31 de enero?',
-                        choices: {
-                            a: 'No se registra ningún asiento hasta el pago.',
-                            b: 'Gasto Honorarios Profesionales $2,500 (D); Cuentas por Pagar $2,500 (H).',
-                            c: 'Gasto Honorarios Profesionales $2,500 (D); Efectivo $2,500 (H).'
-                        },
-                        answer: 'b',
-                        explanation: 'Según el principio de devengo, el gasto se incurrió en enero y debe registrarse en ese mes. Como no se ha pagado, se crea un pasivo (Cuentas por Pagar) para reflejar la obligación.'
-                    }
-                ]
-            },
-            {
-                id: 'mayorizacion',
-                title: 'Mayorización',
-                explanation: `
-                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 2: Mayorización – La Clasificación y Acumulación de Datos</h2>
-                    <p class="mb-4">La mayorización es el proceso de transferir la información de cada asiento del Diario General a su respectiva cuenta en el Libro Mayor. Mientras el diario es un registro cronológico, el libro mayor organiza las transacciones por cuenta, acumulando los débitos y créditos para determinar el saldo final de cada una.</p>
-                    <p class="mb-4">Este paso transforma la lista de transacciones en un formato estructurado que permite conocer el estado de cualquier cuenta (ej. cuánto efectivo hay, cuánto se debe) en cualquier momento. El resultado de la mayorización es la base para preparar el balance de comprobación.</p>
-                `,
-                examples: [
-                    {
-                        title: 'Caso 1: Mayorización de la Cuenta "Efectivo"',
-                        description: 'Utilizando los asientos de la sección anterior, la cuenta T para Efectivo reflejaría:',
-                        table: {
-                            headers: ['Débitos', 'Créditos'],
-                            rows: [
-                               ['20,000.00 (Aporte)', '3,522.00 (Nómina)'],
-                               ['3,360.00 (Venta)', ''],
-                               ['50,000.00 (Préstamo)', ''],
-                               ['<b>Total Débitos: 73,360.00</b>', '<b>Total Créditos: 3,522.00</b>'],
-                               ['<b>Saldo Deudor: 69,838.00</b>', '']
-                            ],
-                            isTAccount: true
-                        }
-                    },
-                     {
-                        title: 'Caso 2: Mayorización de "Cuentas por Pagar"',
-                        description: 'La cuenta T para Cuentas por Pagar a Proveedores reflejaría:',
-                        table: {
-                            headers: ['Débitos', 'Créditos'],
-                            rows: [
-                               ['', '11,200.00 (Compra)'],
-                               ['<b>Total Débitos: 0.00</b>', '<b>Total Créditos: 11,200.00</b>'],
-                               ['', '<b>Saldo Acreedor: 11,200.00</b>']
-                            ],
-                            isTAccount: true
-                        }
-                    }
-                ],
-                quiz: [
-                    {
-                        question: 'La cuenta de Efectivo inicia con saldo deudor de $5,000. Durante el mes: cobro a clientes $10,000; pago a proveedores $7,000; venta al contado $3,000; compra de suministros al contado $500; pago de salarios $4,000. ¿Cuál es el saldo final?',
-                        choices: {
-                            a: '$6,500 deudor.',
-                            b: '$6,500 acreedor.',
-                            c: '$18,000 deudor.'
-                        },
-                        answer: 'a',
-                        explanation: 'Saldo Inicial $5,000 + Débitos ($10,000 + $3,000) - Créditos ($7,000 + $500 + $4,000) = $5,000 + $13,000 - $11,500 = $6,500 deudor.'
-                    },
-                    {
-                        question: 'Cuenta T para "Cuentas por Pagar": Saldo inicial (acreedor) $3,000. Débitos del período $8,000. Créditos del período $12,000. El saldo final es:',
-                        choices: {
-                            a: '$7,000 deudor.',
-                            b: '$1,000 acreedor.',
-                            c: '$7,000 acreedor.'
-                        },
-                        answer: 'c',
-                        explanation: 'Saldo Inicial Acreedor $3,000 - Débitos $8,000 + Créditos $12,000 = $7,000 acreedor.'
-                    }
-                ]
-            },
-            {
-                id: 'ajustes',
-                title: 'Ajustes Contables',
-                explanation: `
-                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 3: Ajustes Contables – Refinando la Información Financiera</h2>
-                    <p class="mb-4">Los asientos de ajuste se realizan al final de un período para actualizar las cuentas antes de preparar los estados financieros. Su objetivo es aplicar correctamente los principios de <b>reconocimiento de ingresos</b> (registrar ingresos cuando se ganan) y de <b>asociación</b> (registrar gastos cuando se incurren), independientemente del flujo de efectivo.</p>
-                    <p class="mb-4">Tipos comunes de ajustes incluyen:</p>
-                    <ul class="list-disc list-inside mb-4 space-y-1">
-                        <li><b>Gastos Pagados por Anticipado:</b> Reconocer la porción de un activo (ej. seguro) que se ha consumido.</li>
-                        <li><b>Ingresos Cobrados por Anticipado:</b> Reconocer la porción de un pasivo (ej. anticipo de cliente) que se ha ganado.</li>
-                        <li><b>Gastos Acumulados:</b> Registrar gastos incurridos pero no pagados (ej. sueldos).</li>
-                        <li><b>Ingresos Acumulados:</b> Registrar ingresos ganados pero no cobrados (ej. intereses).</li>
-                        <li><b>Depreciación:</b> Asignar el costo de un activo a lo largo de su vida útil.</li>
-                    </ul>
-                `,
-                examples: [
-                    {
-                        title: 'Caso 1: Ajuste por Depreciación',
-                        description: 'Un vehículo de $25,000 con vida útil de 5 años y valor residual de $5,000. Cálculo del ajuste mensual: (($25,000 - $5,000) / 5 años) / 12 meses = $333.33.',
-                        table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['31/01/202X', 'Gasto por Depreciación', '333.33', ''],
-                                ['', 'Depreciación Acumulada - Vehículo', '', '333.33']
-                            ]
-                        }
-                    },
-                    {
-                        title: 'Caso 2: Ajuste por Sueldos Acumulados',
-                        description: 'La nómina semanal de 5 días es de $5,000 y se paga los viernes. Al 31 de enero (miércoles), los empleados han trabajado 3 días no pagados. Cálculo: ($5,000 / 5 días) * 3 días = $3,000.',
-                        table: {
-                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['31/01/202X', 'Gasto Sueldos', '3,000.00', ''],
-                                ['', 'Sueldos por Pagar', '', '3,000.00']
-                            ]
-                        }
-                    }
-                ],
-                quiz: [
-                    {
-                        question: 'El 1 de octubre, una empresa pagó $3,600 por el alquiler de 6 meses. Al 31 de diciembre, ¿cuál es el saldo de "Alquiler Pagado por Anticipado" después del ajuste?',
-                        choices: {
-                            a: '$1,800.',
-                            b: '$3,600.',
-                            c: '$0.'
-                        },
-                        answer: 'a',
-                        explanation: 'El alquiler mensual es $3,600 / 6 = $600. Han transcurrido 3 meses (Oct-Dic), por lo que el gasto es $1,800. El saldo del activo anticipado es $3,600 - $1,800 = $1,800.'
-                    },
-                    {
-                        question: 'Un equipo costó $120,000, valor residual $10,000, vida útil 10 años. Se compró el 1 de julio. ¿Cuál es el gasto por depreciación para el año fiscal que termina el 31 de diciembre?',
-                        choices: {
-                            a: '$11,000.',
-                            b: '$5,500.',
-                            c: '$12,000.'
-                        },
-                        answer: 'b',
-                        explanation: 'La depreciación anual es ($120,000 - $10,000) / 10 = $11,000. Como se usó por 6 meses (Jul-Dic), la depreciación del período es $11,000 * (6/12) = $5,500.'
-                    }
-                ]
-            },
-            {
-                id: 'balance_comprobacion',
-                title: 'Balance de Comprobación',
-                explanation: `
-                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 4: Balance de Comprobación</h2>
-                    <p class="mb-4">El balance de comprobación es una lista de todas las cuentas del libro mayor y sus saldos. Su propósito es verificar la igualdad matemática entre débitos y créditos. Se prepara en dos momentos clave:</p>
-                    <ul class="list-disc list-inside mb-4 space-y-1">
-                        <li><b>Balance de Comprobación No Ajustado:</b> Se prepara antes de los ajustes para detectar errores de mayorización.</li>
-                        <li><b>Balance de Comprobación Ajustado:</b> Se prepara después de los ajustes y es la base para crear los estados financieros. Contiene los saldos finales y correctos de todas las cuentas.</li>
-                    </ul>
-                `,
-                examples: [
-                    {
-                        title: 'Ejemplo: Balance de Comprobación Ajustado',
-                        description: 'A continuación se muestra un ejemplo simplificado de un balance de comprobación ajustado.',
-                        table: {
-                            headers: ['Cuenta', 'Debe ($)', 'Haber ($)'],
-                            rows: [
-                                ['Efectivo', '20,000', ''],
-                                ['Suministros', '1,500', ''],
-                                ['Equipo de Oficina', '50,000', ''],
-                                ['Depreciación Acumulada', '', '15,000'],
-                                ['Cuentas por Pagar', '', '8,000'],
-                                ['Capital Social', '', '60,000'],
-                                ['Ingresos por Servicios', '', '33,000'],
-                                ['Gasto Sueldos', '24,000', ''],
-                                ['Gasto Depreciación', '5,000', ''],
-                                ['<b>Total</b>', '<b>100,500</b>', '<b>116,000</b>'],
-                                ['', '<i>(Nota: Este ejemplo está desbalanceado a propósito para ilustrar el formato. En la práctica, los totales deben ser iguales.)</i>', '', '']
-                            ]
-                        }
-                    }
-                ],
-                quiz: [
-                    {
-                        question: 'El balance no ajustado muestra Suministros por $2,000. El conteo físico final es de $700. El balance ajustado mostrará:',
-                        choices: {
-                            a: 'Suministros con saldo deudor de $700 y Gasto Suministros con saldo deudor de $1,300.',
-                            b: 'Suministros con saldo deudor de $1,300 y Gasto Suministros con saldo deudor de $700.',
-                            c: 'Suministros con saldo acreedor de $1,300.'
-                        },
-                        answer: 'a',
-                        explanation: 'Se consumieron $2,000 - $700 = $1,300 en suministros. El ajuste debita Gasto Suministros por $1,300 y acredita Suministros por $1,300. El nuevo saldo de Suministros es $700.'
-                    },
-                    {
-                        question: 'Un balance de comprobación en equilibrio es prueba de que:',
-                        choices: {
-                            a: 'Todos los asientos de diario se registraron correctamente.',
-                            b: 'Todos los asientos se mayorizaron correctamente.',
-                            c: 'El total de débitos en el libro mayor es igual al total de créditos.'
-                        },
-                        answer: 'c',
-                        explanation: 'El equilibrio solo prueba la igualdad matemática. No detecta errores como la omisión de un asiento completo o el registro de un débito en la cuenta incorrecta.'
-                    }
-                ]
-            },
-            {
-                id: 'cierre_libros',
-                title: 'Cierre de Libros',
-                explanation: `
-                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 5: Proceso de Cierre de Libros</h2>
-                    <p class="mb-4">Los asientos de cierre se realizan al final del período para "reiniciar" las cuentas temporales (ingresos, gastos y dividendos) y transferir la utilidad o pérdida neta a la cuenta de patrimonio (Utilidades Retenidas). Este proceso separa formalmente un período contable del siguiente.</p>
-                    <p class="mb-4">Los pasos son:</p>
-                    <ol class="list-decimal list-inside mb-4 space-y-1">
-                        <li>Cerrar todas las cuentas de ingresos contra la cuenta "Pérdidas y Ganancias".</li>
-                        <li>Cerrar todas las cuentas de gastos contra "Pérdidas y Ganancias".</li>
-                        <li>Cerrar el saldo de "Pérdidas y Ganancias" (la utilidad o pérdida neta) contra "Utilidades Retenidas".</li>
-                        <li>Cerrar la cuenta de Dividendos contra "Utilidades Retenidas".</li>
-                    </ol>
-                `,
-                examples: [],
-                quiz: [
-                    {
-                        question: '¿Cuál de las siguientes cuentas no se cierra al final del período contable?',
-                        choices: {
-                            a: 'Ingresos por Servicios.',
-                            b: 'Gasto por Depreciación.',
-                            c: 'Depreciación Acumulada.'
-                        },
-                        answer: 'c',
-                        explanation: 'Depreciación Acumulada es una cuenta de contra-activo (balance general), por lo tanto, es una cuenta permanente. Su saldo se arrastra al siguiente período.'
-                    },
-                    {
-                        question: 'La cuenta de Utilidades Retenidas tiene un saldo inicial de $80,000. La utilidad neta del período es de $45,000 y se declaran dividendos de $15,000. El saldo final de Utilidades Retenidas será:',
-                        choices: {
-                            a: '$110,000.',
-                            b: '$50,000.',
-                            c: '$125,000.'
-                        },
-                        answer: 'a',
-                        explanation: 'Saldo Final = Saldo Inicial + Utilidad Neta - Dividendos = $80,000 + $45,000 - $15,000 = $110,000.'
-                    }
-                ]
-            },
-            {
-                id: 'estados_financieros',
-                title: 'Estados Financieros',
-                explanation: `
-                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 6: Elaboración y Análisis de Estados Financieros</h2>
-                    <p class="mb-4">La elaboración de los estados financieros es la culminación del ciclo contable. Estos informes comunican la posición y el rendimiento financiero de la empresa. Se preparan a partir de los saldos del balance de comprobación ajustado y están interconectados.</p>
-                    <ul class="list-disc list-inside mb-4 space-y-1">
-                        <li><b>Estado de Resultados:</b> Muestra el rendimiento (ingresos - gastos) durante un período.</li>
-                        <li><b>Balance General:</b> Muestra la posición financiera (activos, pasivos, patrimonio) en una fecha específica.</li>
-                        <li><b>Estado de Flujos de Efectivo:</b> Explica los cambios en el efectivo por actividades de operación, inversión y financiación durante un período.</li>
-                    </ul>
-                `,
-                examples: [],
-                quiz: [
-                    {
-                        question: 'Una empresa tiene Activos Corrientes de $100,000, Activos No Corrientes de $300,000, Pasivos Corrientes de $50,000 y Pasivos No Corrientes de $150,000. ¿Cuál es el monto del Patrimonio?',
-                        choices: {
-                            a: '$200,000.',
-                            b: '$500,000.',
-                            c: '$300,000.'
-                        },
-                        answer: 'a',
-                        explanation: 'Ecuación Contable: Activos = Pasivos + Patrimonio. Total Activos ($400,000) = Total Pasivos ($200,000) + Patrimonio. Por lo tanto, Patrimonio = $400,000 - $200,000 = $200,000.'
-                    },
-                    {
-                        question: 'En el método indirecto del Estado de Flujos de Efectivo, la depreciación se suma a la utilidad neta porque:',
-                        choices: {
-                            a: 'Es una fuente de efectivo.',
-                            b: 'Es un gasto que no implicó una salida de efectivo.',
-                            c: 'Es un ingreso que no implicó una entrada de efectivo.'
-                        },
-                        answer: 'b',
-                        explanation: 'La depreciación es un gasto no monetario. Redujo la utilidad neta sin usar efectivo, por lo que para conciliar la utilidad con el flujo de efectivo, su efecto debe revertirse sumándola de nuevo.'
-                    }
-                ]
-            }
-        ]
-    };
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const navContainer = document.getElementById('topic-nav');
-        const contentContainer = document.getElementById('topic-content');
-        let currentTopicId = studyGuideData.topics[0].id;
-
-        const renderNav = () => {
-            navContainer.innerHTML = studyGuideData.topics.map(topic => `
-                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
-                    ${topic.title}
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold mb-4 text-slate-800">Instrucciones de la Prueba</h2>
+                <p class="mb-4 text-slate-700">Estás a punto de comenzar una simulación completa del examen complexivo. Lee atentamente las siguientes instrucciones antes de empezar:</p>
+                <ul class="list-disc list-inside mb-6 space-y-2 text-slate-700">
+                    <li>El examen consta de <strong>100 preguntas</strong> de opción múltiple (a, b, c).</li>
+                    <li>La distribución es de <strong>60 preguntas teóricas</strong> y <strong>40 preguntas prácticas</strong>.</li>
+                    <li>Tendrás un tiempo límite de <strong>150 minutos</strong> para completar la prueba.</li>
+                    <li>Puedes navegar entre las preguntas, pero asegúrate de administrar bien tu tiempo.</li>
+                    <li>Al finalizar el tiempo o al entregar el examen, recibirás tu calificación final y <strong>retroalimentación de todas las preguntas</strong> .</li>
+                </ul>
+                <button id="start-quiz-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-colors text-lg">
+                    Empezar Prueba
                 </button>
-            `).join('');
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                <header class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-indigo-700">Pregunta <span id="question-number"></span> de 100</h2>
+                        <div class="bg-slate-800 text-white font-bold py-2 px-4 rounded-lg">
+                            <span id="timer">00:00:00</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                </header>
+
+                <div id="question-container" class="mb-6">
+                    <p id="question-text" class="text-lg text-slate-900 font-medium mb-4"></p>
+                    <div id="choices-container" class="space-y-3">
+                        <!-- Choices will be rendered here -->
+                    </div>
+                </div>
+
+                <footer class="mt-8 pt-6 border-t border-slate-200 flex justify-between items-center">
+                    <button id="prev-btn" class="bg-slate-200 text-slate-800 font-semibold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+                    <button id="next-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">Siguiente</button>
+                    <button id="finish-btn" class="hidden bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-sm hover:bg-green-700 transition-colors">Finalizar Prueba</button>
+                </footer>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden">
+             <header class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Resultados del Examen</h1>
+            </header>
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-md text-center">
+                <h2 class="text-2xl font-bold mb-4 text-slate-800">¡Prueba Completada!</h2>
+                <p class="text-lg text-slate-600 mb-2">Tu puntuación final es:</p>
+                <p class="text-6xl font-bold text-indigo-600 mb-6"><span id="score">0</span> / 100</p>
+                <div id="score-message" class="text-lg font-medium mb-8"></div>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button id="restart-quiz-btn" class="bg-slate-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-slate-700 transition-colors">Volver a Intentar</button>
+                    <button id="review-answers-btn" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors">Revisar Respuestas</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Review Screen -->
+        <div id="review-screen" class="hidden">
+             <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                <header class="mb-6 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-slate-800">Revisión de Respuestas</h2>
+                     <button id="back-to-results-btn" class="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">← Volver a Resultados</button>
+                </header>
+                <div id="review-container">
+                    <!-- Review content will be generated here -->
+                </div>
+             </div>
+        </div>
+
+    </div>
+
+    <script src="todos.js"></script>
+    <script>
+    const questionsData = [
+        // --- 60 PREGUNTAS TEÓRICAS ---
+        // NIIF y Contabilidad Superior (15)
+        { id: 1, type: 'Teórico', question: 'Según el Marco Conceptual, el principio de "sustancia sobre forma" implica que:', choices: { a: 'Las transacciones deben registrarse estrictamente según su forma legal.', b: 'La realidad económica de una transacción prevalece sobre su estructura legal.', c: 'Solo las transacciones con un contrato físico pueden ser contabilizadas.' }, answer: 'b', explanation: 'El principio de "sustancia sobre forma" exige que las transacciones se contabilicen de acuerdo con su realidad económica y no meramente su forma legal, para que la información sea relevante y represente fielmente los hechos.' },
+        { id: 2, type: 'Teórico', question: 'En un contrato con múltiples elementos bajo NIIF 15, ¿cuándo se considera que un bien o servicio es una "obligación de desempeño distinta"?', choices: { a: 'Cuando el cliente puede beneficiarse del bien o servicio por sí solo y es separable de otras promesas del contrato.', b: 'Cuando el valor del bien o servicio supera el 10% del valor total del contrato.', c: 'Cuando el bien o servicio se entrega en una fecha diferente a los demás componentes del contrato.' }, answer: 'a', explanation: 'Un bien o servicio es distinto si cumple dos criterios: 1) El cliente puede beneficiarse de él por sí solo o con otros recursos disponibles, y 2) La promesa de transferirlo es identificable por separado de otras promesas en el contrato.' },
+        { id: 3, type: 'Teórico', question: 'Bajo NIIF 16, ¿por qué el arrendatario debe reconocer un "activo por derecho de uso" para casi todos los arrendamientos?', choices: { a: 'Para reflejar que el arrendatario ha adquirido legalmente la propiedad del activo subyacente.', b: 'Para eliminar la diferencia contable entre arrendamientos financieros y operativos, reflejando el control sobre el uso del activo.', c: 'Para aumentar los activos totales de la empresa y mejorar sus ratios financieros.' }, answer: 'b', explanation: 'La NIIF 16 eliminó la distinción entre arrendamiento operativo y financiero para el arrendatario. El objetivo es que los estados financieros reflejen el derecho del arrendatario a usar un activo durante un período y el pasivo correspondiente por los pagos, lo que proporciona una imagen más fiel de los activos y pasivos de la entidad.' },
+        { id: 4, type: 'Teórico', question: 'El modelo de "pérdidas crediticias esperadas" (PCE) de la NIIF 9 se diferencia del modelo anterior porque:', choices: { a: 'Solo reconoce pérdidas cuando hay evidencia objetiva de que un activo financiero se ha deteriorado.', b: 'Requiere el reconocimiento de pérdidas futuras esperadas desde el momento inicial, incorporando información prospectiva.', c: 'Se aplica únicamente a los préstamos bancarios y no a las cuentas por cobrar comerciales.' }, answer: 'b', explanation: 'El modelo de PCE es un cambio fundamental porque es un modelo "forward-looking" (prospectivo). Exige que las entidades consideren las pérdidas crediticias esperadas futuras, en lugar de esperar a que ocurra un evento de pérdida (modelo de pérdida incurrida).' },
+        { id: 5, type: 'Teórico', question: 'Según la NIC 36, el "importe recuperable" de un activo es el mayor entre:', choices: { a: 'Su costo histórico y su valor de mercado actual.', b: 'Su valor en libros y su valor residual.', c: 'Su valor razonable menos los costos de disposición y su valor en uso.' }, answer: 'c', explanation: 'La NIC 36 define el importe recuperable como el mayor valor entre el precio que se podría obtener por la venta del activo en el mercado (valor razonable menos costos de disposición) y el valor presente de los flujos de efectivo futuros que se espera generar con su uso continuado (valor en uso).' },
+        { id: 6, type: 'Teórico', question: 'Según NIIF 3, el goodwill adquirido en una combinación de negocios:', choices: { a: 'Se amortiza en línea recta durante un máximo de 20 años.', b: 'No se amortiza, pero se somete a pruebas de deterioro anualmente.', c: 'Se reconoce como un gasto en el período de la adquisición.' }, answer: 'b', explanation: 'El goodwill tiene una vida útil indefinida y, por lo tanto, no se amortiza. En su lugar, la gerencia debe evaluar anualmente si su valor se ha deteriorado.' },
+        { id: 7, type: 'Teórico', question: 'Bajo NIIF 10, el control sobre una participada existe cuando el inversor tiene:', choices: { a: 'Más del 50% de los derechos de voto.', b: 'Poder, exposición a rendimientos variables y la capacidad de usar su poder para influir en esos rendimientos.', c: 'Influencia significativa sobre las políticas financieras y operativas.' }, answer: 'b', explanation: 'La NIIF 10 define el control basándose en tres elementos concurrentes: poder sobre la participada, exposición a rendimientos variables y la capacidad de usar ese poder para afectar dichos rendimientos, independientemente del porcentaje de propiedad.' },
+        { id: 8, type: 'Teórico', question: 'La diferencia fundamental entre el método de la participación (NIC 28) y la consolidación es que:', choices: { a: 'El método de la participación no reconoce la parte proporcional de los activos y pasivos de la asociada.', b: 'La consolidación solo se aplica a subsidiarias con el 100% de propiedad.', c: 'El método de la participación ajusta la inversión por los dividendos recibidos, mientras que la consolidación no.' }, answer: 'a', explanation: 'El método de la participación presenta la inversión en una sola línea en el balance, ajustada por la parte del resultado de la asociada. No consolida línea por línea los activos y pasivos, ya que no existe control.' },
+        { id: 9, type: 'Teórico', question: 'Según la NIC 21, las diferencias de cambio que surgen de la conversión de los estados financieros de un negocio en el extranjero (con moneda funcional diferente) se reconocen en:', choices: { a: 'El resultado del período.', b: 'Otros resultados integrales (ORI).', c: 'Directamente en las utilidades retenidas.' }, answer: 'b', explanation: 'Las diferencias de cambio en la conversión de negocios en el extranjero se acumulan en ORI para no distorsionar el resultado del período con fluctuaciones que no provienen de la operación principal.' },
+        { id: 10, type: 'Teórico', question: 'La NIC 38 prohíbe la capitalización de marcas generadas internamente porque:', choices: { a: 'Es imposible determinar su vida útil.', b: 'Su costo no puede distinguirse de manera fiable del costo de desarrollar el negocio en su conjunto.', c: 'Las marcas no son consideradas activos intangibles.' }, answer: 'b', explanation: 'La norma adopta una postura conservadora, argumentando que los costos asociados a la creación de marcas, reputación, etc., son indistinguibles de los costos operativos generales, lo que impide una medición fiable para su capitalización.' },
+        { id: 11, type: 'Teórico', question: 'Según la NIC 37, para reconocer una provisión se requiere:', choices: { a: 'Una posible obligación futura con una salida de recursos probable.', b: 'Una obligación presente (legal o implícita), una salida de recursos probable y una estimación fiable del importe.', c: 'Cualquier pasivo cuyo importe o fecha de vencimiento sean inciertos.' }, answer: 'b', explanation: 'La NIC 37 es estricta y exige el cumplimiento de los tres criterios de forma concurrente para que una provisión sea reconocida en los estados financieros.' },
+        { id: 12, type: 'Teórico', question: '¿Cuál de las siguientes partidas se reconoce típicamente en "Otros Resultados Integrales" (ORI)?', choices: { a: 'El ingreso por la venta de bienes.', b: 'El superávit por revaluación de Propiedad, Planta y Equipo.', c: 'El gasto por sueldos y salarios.' }, answer: 'b', explanation: 'El superávit por revaluación se reconoce en ORI porque es una ganancia no realizada que no proviene de las actividades operativas principales de la empresa.' },
+        { id: 13, type: 'Teórico', question: 'El principio fundamental de medición de la NIIF 2 para pagos basados en acciones liquidados con patrimonio es:', choices: { a: 'Medir la transacción al valor razonable de los instrumentos de patrimonio concedidos.', b: 'Medir la transacción al valor intrínseco de las opciones en la fecha de liquidación.', c: 'Registrar la transacción solo cuando los empleados ejercen sus opciones.' }, answer: 'a', explanation: 'La NIIF 2 requiere que la entidad reconozca un gasto basado en el valor razonable de las opciones en la fecha de concesión, distribuyéndolo a lo largo del período de consolidación de la concesión (vesting period).' },
+        { id: 14, type: 'Teórico', question: 'La principal ventaja del método directo sobre el método indirecto para presentar el flujo de efectivo de operación es que:', choices: { a: 'Es más fácil de preparar a partir de los registros contables.', b: 'Muestra las principales categorías de cobros y pagos en términos brutos, ofreciendo información más útil.', c: 'Concilia la utilidad neta con el flujo de efectivo neto.' }, answer: 'b', explanation: 'El método directo es preferido por el IASB porque muestra de dónde provino y en qué se usó el efectivo operativo (ej. cobros a clientes, pagos a proveedores), lo cual es más transparente. El método indirecto solo ajusta la utilidad neta.' },
+        { id: 15, type: 'Teórico', question: 'En la jerarquía de valor razonable de la NIIF 13, las mediciones de Nivel 1 se basan en:', choices: { a: 'Datos de entrada no observables, como las proyecciones internas de la empresa.', b: 'Datos de entrada observables para activos o pasivos similares en mercados activos.', c: 'Precios cotizados (sin ajustar) en mercados activos para activos o pasivos idénticos.' }, answer: 'c', explanation: 'El Nivel 1 representa la evidencia más fiable del valor razonable, ya que utiliza precios de mercado directos y observables para el mismo activo o pasivo que se está midiendo.' },
+        // Auditoría, Aseguramiento y Ética Profesional (15)
+        { id: 16, type: 'Teórico', question: 'Un auditor descubre que el gerente financiero de un cliente de auditoría fue su compañero de cuarto en la universidad. ¿Qué tipo de amenaza a la independencia se presenta principalmente?', choices: { a: 'Amenaza de interés propio.', b: 'Amenaza de autorrevisión.', c: 'Amenaza de familiaridad.' }, answer: 'c', explanation: 'La amenaza de familiaridad surge de una relación larga o cercana con un cliente, lo que puede llevar al auditor a ser demasiado comprensivo con sus intereses o a aceptar su trabajo sin el debido escrutinio.' },
+        { id: 17, type: 'Teórico', question: 'Dentro del marco COSO de control interno, el "Ambiente de Control" se refiere a:', choices: { a: 'Las políticas y procedimientos específicos para procesar transacciones.', b: 'La integridad, los valores éticos y la competencia del personal de la entidad (el "tono en la cúpula").', c: 'El proceso de la entidad para identificar y responder a los riesgos de negocio.' }, answer: 'b', explanation: 'El Ambiente de Control es la base de todos los demás componentes del control interno. Establece el tono de la organización e influye en la conciencia de control de su gente.' },
+        { id: 18, type: 'Teórico', question: 'Si el auditor evalúa que el riesgo de incorrección material es alto, el riesgo de detección aceptable debe ser:', choices: { a: 'Alto, permitiendo menos trabajo sustantivo.', b: 'Bajo, requiriendo más trabajo sustantivo.', c: 'Independiente del riesgo de incorrección material.' }, answer: 'b', explanation: 'Existe una relación inversa. Para mantener el riesgo de auditoría general en un nivel bajo, si el riesgo de que existan errores es alto, el auditor debe hacer más trabajo (procedimientos sustantivos) para reducir la probabilidad de no detectarlos (bajo riesgo de detección).' },
+        { id: 19, type: 'Teórico', question: 'La "materialidad de ejecución" (performance materiality) se establece para:', choices: { a: 'Reducir a un nivel apropiadamente bajo la probabilidad de que el agregado de incorrecciones no corregidas y no detectadas exceda la materialidad para los estados financieros en su conjunto.', b: 'Determinar el umbral por encima del cual cualquier incorrección se considera fraude.', c: 'Comunicar a la gerencia las incorrecciones encontradas durante la auditoría.' }, answer: 'a', explanation: 'La materialidad de ejecución es un umbral más bajo que la materialidad general, utilizado por el auditor para planificar y realizar procedimientos de auditoría, actuando como un "colchón de seguridad".' },
+        { id: 20, type: 'Teórico', question: 'Un procedimiento analítico sustantivo implica:', choices: { a: 'Confirmar saldos directamente con terceros, como bancos o clientes.', b: 'Evaluar información financiera a través del análisis de relaciones plausibles entre datos financieros y no financieros.', c: 'Revisar la documentación de soporte para transacciones individuales.' }, answer: 'b', explanation: 'Los procedimientos analíticos consisten en desarrollar una expectativa (ej. las ventas deberían aumentar en línea con el crecimiento del mercado) y compararla con los datos registrados para identificar fluctuaciones inusuales que requieran investigación.' },
+        { id: 21, type: 'Teórico', question: 'El "triángulo del fraude" está compuesto por:', choices: { a: 'Activo, Pasivo y Patrimonio.', b: 'Incentivo/Presión, Oportunidad y Racionalización.', c: 'Error, Fraude y Acto Ilegal.' }, answer: 'b', explanation: 'Este modelo sugiere que el fraude es más probable que ocurra cuando existen estos tres elementos: una razón para cometerlo (presión), una debilidad en el control interno para permitirlo (oportunidad) y una justificación personal para hacerlo (racionalización).' },
+        { id: 22, type: 'Teórico', question: 'Las "Cuestiones Clave de la Auditoría" (KAM) en el informe del auditor son:', choices: { a: 'Una lista de todas las deficiencias de control interno encontradas.', b: 'Aquellas cuestiones que, a juicio del auditor, fueron de la mayor significatividad en la auditoría de los estados financieros del período actual.', c: 'Una opinión con salvedades sobre áreas específicas de los estados financieros.' }, answer: 'b', explanation: 'Las KAM buscan mejorar el valor comunicativo del informe del auditor al resaltar las áreas que requirieron la atención más significativa del auditor, como estimaciones complejas o transacciones inusuales.' },
+        { id: 23, type: 'Teórico', question: 'Un auditor emitiría una opinión adversa (desfavorable) cuando:', choices: { a: 'No puede obtener evidencia de auditoría suficiente y apropiada sobre un asunto.', b: 'Encuentra una incorrección material pero no generalizada en los estados financieros.', c: 'Concluye que las incorrecciones, individualmente o de forma agregada, son materiales y generalizadas para los estados financieros.' }, answer: 'c', explanation: 'Una opinión adversa es la más severa. Significa que los estados financieros en su conjunto están tan erróneos que no presentan la imagen fiel de la situación de la empresa.' },
+        { id: 24, type: 'Teórico', question: 'La principal diferencia entre una auditoría financiera y una auditoría forense es que:', choices: { a: 'La auditoría forense solo la puede realizar la policía.', b: 'La auditoría forense se realiza con el objetivo específico de investigar un presunto fraude o delito financiero para ser utilizado en un litigio.', c: 'La auditoría financiera no requiere escepticismo profesional.' }, answer: 'b', explanation: 'Mientras que una auditoría financiera busca opinar sobre la razonabilidad de los estados financieros, una auditoría forense tiene una mentalidad investigativa y su trabajo está diseñado para resistir el escrutinio de un tribunal.' },
+        { id: 25, type: 'Teórico', question: 'Si un auditor identifica una incertidumbre material sobre la capacidad de la entidad para continuar como empresa en funcionamiento y esta está adecuadamente revelada en las notas, el auditor debe:', choices: { a: 'Emitir una opinión adversa.', b: 'Emitir una opinión no modificada (limpia) pero incluir una sección de "Incertidumbre Material Relacionada con la Empresa en Funcionamiento".', c: 'Renunciar al encargo de auditoría.' }, answer: 'b', explanation: 'Si la revelación es adecuada, los estados financieros no están materialmente incorrectos. El auditor cumple su deber al llamar la atención de los usuarios sobre esta incertidumbre específica en su informe.' },
+        { id: 26, type: 'Teórico', question: 'Los "controles generales de TI" (ITGC) se refieren a:', choices: { a: 'Controles sobre los cálculos específicos dentro de una aplicación, como el cálculo de intereses.', b: 'Controles que respaldan el entorno general de TI, como los controles de acceso a programas y datos, y los controles sobre cambios en los programas.', c: 'Controles manuales realizados por los usuarios para verificar los resultados del sistema.' }, answer: 'b', explanation: 'Los ITGC son la base del entorno de control de TI. Si los controles generales son débiles (ej. cualquiera puede cambiar un programa), los controles de aplicación específicos no son fiables.' },
+        { id: 27, type: 'Teórico', question: 'Al utilizar el trabajo de un experto, el auditor es responsable de:', choices: { a: 'La totalidad del trabajo del experto, como si lo hubiera hecho él mismo.', b: 'Evaluar la competencia y objetividad del experto y la adecuación de su trabajo para los fines de la auditoría.', c: 'Delegar completamente la responsabilidad del área auditada al experto.' }, answer: 'b', explanation: 'El auditor no puede simplemente aceptar el trabajo del experto. Debe entenderlo, evaluar su fiabilidad y determinar si proporciona evidencia suficiente y apropiada. La responsabilidad final de la opinión de auditoría recae en el auditor.' },
+        { id: 28, type: 'Teórico', question: 'El objetivo principal de una auditoría de gestión es:', choices: { a: 'Emitir una opinión sobre la razonabilidad de los estados financieros.', b: 'Detectar fraudes dentro de la organización.', c: 'Evaluar la eficiencia, eficacia y economía de las operaciones de una entidad para identificar oportunidades de mejora.' }, answer: 'c', explanation: 'La auditoría de gestión va más allá de los datos financieros para evaluar cómo la organización utiliza sus recursos para alcanzar sus objetivos, proporcionando recomendaciones a la gerencia.' },
+        { id: 29, type: 'Teórico', question: 'El escepticismo profesional requiere que el auditor:', choices: { a: 'Asuma que la gerencia es deshonesta.', b: 'Tenga una mente inquisitiva y realice una evaluación crítica de la evidencia de auditoría.', c: 'Confíe en la evidencia obtenida en auditorías anteriores sin reevaluarla.' }, answer: 'b', explanation: 'No se trata de desconfiar, sino de no aceptar ciegamente la información. Implica cuestionar, indagar y corroborar la evidencia obtenida, estando alerta a condiciones que puedan indicar una posible incorrección.' },
+        { id: 30, type: 'Teórico', question: 'La documentación de auditoría debe ser suficiente para:', choices: { a: 'Permitir que un auditor experimentado, sin conexión previa con el encargo, comprenda el trabajo realizado, la evidencia obtenida y las conclusiones alcanzadas.', b: 'Incluir una copia de cada documento de soporte del cliente.', c: 'Ser entregada en su totalidad a la gerencia del cliente al final de la auditoría.' }, answer: 'a', explanation: 'Este es el criterio fundamental. Los papeles de trabajo deben "hablar por sí mismos", proporcionando un registro claro y completo del proceso de auditoría y la base para la opinión del auditor.' },
+        // Régimen Tributario y Marco Legal Ecuatoriano (12)
+        { id: 31, type: 'Teórico', question: 'En Ecuador, el principio de "renta mundial" significa que:', choices: { a: 'Solo los ingresos generados dentro de Ecuador están sujetos a impuestos.', b: 'Los residentes fiscales ecuatorianos deben tributar sobre sus ingresos de fuente ecuatoriana y del exterior.', c: 'Las empresas extranjeras deben pagar impuestos en Ecuador sobre todas sus ganancias globales.' }, answer: 'b', explanation: 'La residencia fiscal es el factor clave. Si una persona o empresa es residente fiscal en Ecuador, debe declarar y pagar impuestos sobre la totalidad de sus ingresos, sin importar en qué país se generaron.' },
+        { id: 32, type: 'Teórico', question: 'La principal diferencia entre un "Contribuyente Especial" y un contribuyente ordinario como agente de retención es que:', choices: { a: 'Los Contribuyentes Especiales no están obligados a practicar retenciones.', b: 'Los Contribuyentes Especiales actúan como agentes de retención en casi todas sus adquisiciones, mientras que los contribuyentes ordinarios solo en casos específicos.', c: 'Los Contribuyentes Especiales solo retienen IVA, no Impuesto a la Renta.' }, answer: 'b', explanation: 'La calificación de Contribuyente Especial impone una mayor responsabilidad como recaudador de impuestos para el Estado. Deben retener en la fuente en un espectro mucho más amplio de transacciones que una sociedad común.' },
+        { id: 33, type: 'Teórico', question: 'Una de las principales desventajas del régimen RIMPE Emprendedor es que:', choices: { a: 'El impuesto se calcula sobre los ingresos brutos, sin considerar los costos y gastos.', b: 'Requiere llevar contabilidad completa y presentar anexos complejos.', c: 'La tarifa del impuesto es siempre más alta que en el régimen general.' }, answer: 'a', explanation: 'Aunque simplifica el cálculo, puede ser perjudicial para negocios con altos volúmenes de venta pero márgenes de utilidad muy bajos, ya que la base imponible no refleja la rentabilidad real.' },
+        { id: 34, type: 'Teórico', question: 'El propósito de la conciliación tributaria es:', choices: { a: 'Asegurar que la utilidad contable sea igual a la utilidad fiscal.', b: 'Ajustar la utilidad contable para determinar la base imponible del impuesto a la renta, sumando gastos no deducibles y restando rentas exentas.', c: 'Calcular el valor del IVA a pagar cada mes.' }, answer: 'b', explanation: 'La conciliación tributaria es el puente entre las normas contables (NIIF) y las normas fiscales (LRTI), ya que existen diferencias permanentes y temporarias entre ambas que deben ajustarse para calcular el impuesto correcto.' },
+        { id: 35, type: 'Teórico', question: 'En una Compañía de Responsabilidad Limitada (Cía. Ltda.), la responsabilidad de los socios está:', choices: { a: 'Limitada al monto de sus aportaciones al capital.', b: 'Ilimitada, respondiendo con su patrimonio personal por las deudas de la compañía.', c: 'Limitada al capital suscrito, aunque no esté pagado.' }, answer: 'a', explanation: 'Esta es la característica definitoria de este tipo de sociedad. Protege el patrimonio personal de los socios, quienes solo arriesgan el capital que invirtieron en la empresa.' },
+        { id: 36, type: 'Teórico', question: 'El 15% de participación de trabajadores en las utilidades de la empresa se considera para la empresa:', choices: { a: 'Un gasto no deducible para el cálculo del Impuesto a la Renta.', b: 'Un gasto deducible para el cálculo del Impuesto a la Renta.', c: 'Una distribución de dividendos.' }, answer: 'b', explanation: 'La ley tributaria permite que el monto pagado a los trabajadores por concepto de participación en utilidades se deduzca de la base imponible del impuesto a la renta de la empresa, incentivando así su cumplimiento.' },
+        { id: 37, type: 'Teórico', question: 'Un contribuyente tiene derecho a usar el crédito tributario del IVA pagado en sus compras cuando:', choices: { a: 'Todas sus ventas son gravadas con tarifa 0%.', b: 'Las compras están relacionadas con la generación de ventas gravadas con tarifa 12%.', c: 'El IVA pagado supera el IVA cobrado en un mes determinado.' }, answer: 'b', explanation: 'El derecho al crédito tributario está directamente vinculado a la actividad económica que genera el débito fiscal. El IVA de compras para generar ventas con tarifa 12% se puede compensar. El IVA de compras para generar ventas con tarifa 0% o exentas se convierte en costo o gasto.' },
+        { id: 38, type: 'Teórico', question: 'El propósito de la normativa de precios de transferencia es:', choices: { a: 'Fijar los precios de venta de los productos en el mercado local.', b: 'Asegurar que las transacciones entre partes relacionadas se realicen a valor de mercado, evitando el traslado artificial de beneficios a jurisdicciones de menor tributación.', c: 'Regular las transferencias de dinero entre empresas del mismo grupo.' }, answer: 'b', explanation: 'Los precios de transferencia son una herramienta clave para combatir la evasión y elusión fiscal a nivel internacional, garantizando que las empresas tributen en los países donde realmente generan sus utilidades.' },
+        { id: 39, type: 'Teórico', question: 'El Impuesto a la Salida de Divisas (ISD) pagado en la importación de materias primas y bienes de capital puede ser utilizado por el contribuyente como:', choices: { a: 'Un gasto no deducible.', b: 'Un crédito tributario para el pago del Impuesto a la Renta.', c: 'Un crédito tributario para el pago del IVA.' }, answer: 'b', explanation: 'La ley permite que el ISD pagado en la importación de insumos productivos se utilice como crédito tributario en la declaración de Impuesto a la Renta, para no encarecer la producción nacional.' },
+        { id: 40, type: 'Teórico', question: 'La prescripción de la obligación tributaria en Ecuador significa que:', choices: { a: 'La deuda tributaria se extingue por el paso del tiempo, y la administración fiscal pierde su facultad para cobrarla.', b: 'El contribuyente puede solicitar una rebaja de la deuda después de un cierto tiempo.', c: 'La deuda se congela y no genera más intereses.' }, answer: 'a', explanation: 'La prescripción brinda seguridad jurídica. Si la administración tributaria no ejerce su derecho a determinar y cobrar una deuda dentro de los plazos legales (que pueden ser interrumpidos), pierde esa facultad.' },
+        { id: 41, type: 'Teórico', question: 'Una de las principales obligaciones formales de un empleador en Ecuador es:', choices: { a: 'Pagar el impuesto a la renta de sus empleados.', b: 'Afiliar a sus trabajadores al IESS desde el primer día de labores y realizar los aportes correspondientes.', c: 'Proporcionar alimentación y vivienda a todos sus trabajadores.' }, answer: 'b', explanation: 'La afiliación al IESS es un derecho irrenunciable del trabajador y una obligación fundamental del empleador, cuyo incumplimiento acarrea graves sanciones.' },
+        { id: 42, type: 'Teórico', question: '¿Cuál es la principal diferencia entre una tasa y un impuesto?', choices: { a: 'Los impuestos son recaudados por el gobierno central y las tasas por los municipios.', b: 'Un impuesto es un tributo general sin una contraprestación directa, mientras que una tasa se paga por la prestación de un servicio público específico y divisible.', c: 'Las tasas son voluntarias y los impuestos son obligatorios.' }, answer: 'b', explanation: 'Esta es la distinción técnica clave. Se paga un impuesto (ej. a la renta) para financiar los gastos generales del Estado. Se paga una tasa (ej. de recolección de basura) a cambio de un servicio específico que se recibe.' },
+        // Contabilidad de Costos y Gerencial (10)
+        { id: 43, type: 'Teórico', question: 'Un sistema de costeo por órdenes de producción es más adecuado para:', choices: { a: 'Una refinería de petróleo que produce gasolina de forma continua.', b: 'Un taller de carpintería que fabrica muebles a medida para cada cliente.', c: 'Una fábrica de bebidas que produce miles de botellas idénticas.' }, answer: 'b', explanation: 'El costeo por órdenes es ideal cuando se producen productos o servicios heterogéneos, y es posible y necesario identificar y acumular los costos para cada "lote" o "trabajo" específico.' },
+        { id: 44, type: 'Teórico', question: 'La principal ventaja del costeo basado en actividades (ABC) sobre los sistemas tradicionales es que:', choices: { a: 'Es más simple y menos costoso de implementar.', b: 'Asigna los costos indirectos de forma más precisa, basándose en el consumo de actividades, lo que reduce los subsidios cruzados entre productos.', c: 'Elimina la necesidad de separar los costos fijos de los variables.' }, answer: 'b', explanation: 'El ABC reconoce que diferentes productos consumen actividades (y por ende, costos indirectos) de manera diferente. Esto lleva a un costeo de producto más exacto, revelando que productos de bajo volumen y complejos pueden ser más costosos de lo que se pensaba.' },
+        { id: 45, type: 'Teórico', question: 'En el análisis Costo-Volumen-Utilidad (CVU), el "margen de contribución" representa:', choices: { a: 'La utilidad neta por cada unidad vendida.', b: 'El monto disponible de cada venta para cubrir los costos fijos y luego generar utilidad.', c: 'El precio de venta menos los costos fijos unitarios.' }, answer: 'b', explanation: 'El margen de contribución (Precio de Venta - Costos Variables) es el concepto clave del análisis CVU. Es el motor que primero cubre los costos fijos y, una vez cubiertos, cada dólar de margen de contribución se convierte en un dólar de utilidad.' },
+        { id: 46, type: 'Teórico', question: 'Una variación desfavorable en la eficiencia de la mano de obra directa indica que:', choices: { a: 'Se pagó una tarifa por hora más alta que la estándar.', b: 'Se utilizaron más horas de mano de obra de las permitidas por el estándar para la producción real.', c: 'Los trabajadores produjeron más unidades de las esperadas.' }, answer: 'b', explanation: 'Esta variación mide la productividad de la mano de obra. Una variación desfavorable significa que el proceso fue ineficiente, requiriendo más tiempo (y por lo tanto, más costo) de lo que se había planificado para el nivel de producción alcanzado.' },
+        { id: 47, type: 'Teórico', question: 'Al decidir si se acepta o no una orden especial a un precio reducido, un costo relevante es:', choices: { a: 'La depreciación en línea recta de la maquinaria existente.', b: 'El costo variable de producción de las unidades adicionales.', c: 'Los costos fijos de alquiler de la fábrica.' }, answer: 'b', explanation: 'Los costos relevantes son aquellos que difieren entre las alternativas. Los costos fijos de la fábrica y la depreciación existente son costos hundidos o no cambiarán, por lo que son irrelevantes. El costo variable de las nuevas unidades solo se incurrirá si se acepta la orden.' },
+        { id: 48, type: 'Teórico', question: 'El punto de partida para la elaboración del presupuesto maestro es el:', choices: { a: 'Presupuesto de efectivo.', b: 'Presupuesto de producción.', c: 'Presupuesto de ventas.' }, answer: 'c', explanation: 'El presupuesto de ventas es la piedra angular de todo el proceso. El nivel de ventas proyectado impulsa todas las demás actividades y presupuestos, como cuántas unidades producir, cuántos materiales comprar y cuánta mano de obra se necesitará.' },
+        { id: 49, type: 'Teórico', question: 'Bajo el costeo variable, los costos fijos de manufactura se tratan como:', choices: { a: 'Costos del producto, incluidos en el inventario.', b: 'Costos del período, llevados directamente al estado de resultados del período en que se incurren.', c: 'Costos mixtos, una parte como costo del producto y otra como costo del período.' }, answer: 'b', explanation: 'Esta es la diferencia clave con el costeo absorbente. El costeo variable argumenta que los costos fijos de fábrica (como el alquiler) son costos de estar listos para producir, no costos de las unidades producidas, por lo que se gastan en el período.' },
+        { id: 50, type: 'Teórico', question: 'Cuando una empresa enfrenta un recurso escaso, la producción debe priorizarse en los productos que tengan el mayor:', choices: { a: 'Precio de venta por unidad.', b: 'Margen de contribución por unidad.', c: 'Margen de contribución por unidad del recurso escaso.' }, answer: 'c', explanation: 'La decisión correcta es maximizar la rentabilidad del recurso limitado. Un producto puede tener un alto margen por unidad, pero si consume una gran cantidad del recurso escaso, puede ser menos rentable que otro producto con menor margen pero que consume menos del recurso.' },
+        { id: 51, type: 'Teórico', question: 'Un precio de transferencia basado en el precio de mercado es generalmente óptimo cuando:', choices: { a: 'No existe un mercado externo para el producto intermedio.', b: 'La división vendedora tiene capacidad ociosa.', c: 'Existe un mercado externo perfectamente competitivo para el producto intermedio y la división vendedora opera a plena capacidad.' }, answer: 'c', explanation: 'El precio de mercado promueve la eficiencia y la congruencia de metas, ya que simula una transacción con un tercero independiente. La división compradora no pagará más que el precio de mercado y la vendedora no aceptará menos.' },
+        { id: 52, type: 'Teórico', question: 'El "costeo del ciclo de vida del producto" se enfoca en:', choices: { a: 'Minimizar únicamente los costos de producción.', b: 'Gestionar la totalidad de los costos de un producto, desde la investigación y desarrollo hasta el servicio postventa.', c: 'Calcular el costo del inventario para el balance general.' }, answer: 'b', explanation: 'Esta perspectiva a largo plazo reconoce que una gran parte de los costos de un producto se "comprometen" en la fase de diseño. Gestionar los costos a lo largo de todo el ciclo de vida (upstream, manufacturing, downstream) lleva a decisiones más estratégicas y rentables.' },
+        // Contabilidad y Auditoría del Sector Público (8)
+        { id: 53, type: 'Teórico', question: 'El objetivo principal de la contabilidad gubernamental es:', choices: { a: 'Maximizar la recaudación de impuestos.', b: 'Facilitar la rendición de cuentas (accountability) sobre el uso de los recursos públicos.', c: 'Determinar la utilidad neta del gobierno.' }, answer: 'b', explanation: 'A diferencia del sector privado, el enfoque del sector público no es la ganancia, sino la gestión transparente y eficiente de los fondos que la sociedad le ha confiado, y la contabilidad es la herramienta clave para demostrarlo.' },
+        { id: 54, type: 'Teórico', question: 'En el sector público ecuatoriano, el presupuesto aprobado por la Asamblea Nacional representa:', choices: { a: 'Una estimación flexible de los gastos.', b: 'Una autorización legal máxima para que las entidades públicas puedan gastar.', c: 'Una guía para la inversión privada.' }, answer: 'b', explanation: 'El presupuesto público tiene fuerza de ley. Gastar por encima de las asignaciones presupuestarias sin la debida autorización constituye una infracción legal y administrativa.' },
+        { id: 55, type: 'Teórico', question: 'Una "glosa" determinada por la Contraloría General del Estado es una:', choices: { a: 'Sanción penal por corrupción.', b: 'Observación sobre una debilidad de control interno.', c: 'Responsabilidad civil culposa que obliga a la restitución de un perjuicio económico causado al Estado.' }, answer: 'c', explanation: 'La glosa es una de las principales herramientas de control de la Contralorìa. Se emite cuando una acción u omisión de un funcionario, por negligencia o culpa, ha causado un daño económico al Estado, y busca la recuperación de dichos fondos.' },
+        { id: 56, type: 'Teórico', question: 'La clasificación presupuestaria del gasto por "grupo" en Ecuador se refiere a:', choices: { a: 'La finalidad del gasto (ej. salud, educación).', b: 'La naturaleza económica del gasto (ej. gastos en personal, bienes y servicios de consumo).', c: 'La entidad que realiza el gasto (ej. ministerio, municipio).' }, answer: 'b', explanation: 'Esta clasificación permite analizar en qué se gasta el dinero público, distinguiendo entre gastos corrientes (operativos) y gastos de capital (inversión).' },
+        { id: 57, type: 'Teórico', question: 'El principio contable de "devengado" en el sector público implica que:', choices: { a: 'Los ingresos y gastos se registran únicamente cuando se cobra o se paga el dinero.', b: 'Los ingresos tributarios se reconocen cuando nace el derecho de cobro y los gastos cuando se contrae la obligación de pago, independientemente del flujo de efectivo.', c: 'Todos los gastos se registran al final del año fiscal.' }, answer: 'b', explanation: 'Al igual que en el sector privado, el devengado proporciona una imagen más precisa de la situación financiera y los resultados, reconociendo las transacciones cuando ocurren económicamente.' },
+        { id: 58, type: 'Teórico', question: 'El Plan Anual de Contratación (PAC) en el sector público ecuatoriano sirve para:', choices: { a: 'Pagar a los contratistas del Estado.', b: 'Planificar y dar a conocer públicamente las compras de bienes y servicios que una entidad planea realizar durante el año, fomentando la transparencia y la participación.', c: 'Registrar los contratos ya firmados.' }, answer: 'b', explanation: 'El PAC es una herramienta fundamental de planificación y transparencia. Permite a los proveedores conocer las futuras necesidades del Estado y prepara a la entidad para llevar a cabo sus procesos de contratación de manera ordenada.' },
+        { id: 59, type: 'Teórico', question: 'Una auditoría de cumplimiento en el sector público se enfoca en verificar si:', choices: { a: 'La entidad alcanzó sus metas y objetivos.', b: 'Las transacciones y operaciones se realizaron de acuerdo con las leyes, regulaciones y normativas aplicables.', c: 'Los estados financieros están libres de incorrección material.' }, answer: 'b', explanation: 'Este tipo de auditoría es crucial en el sector público, donde el apego a la legalidad es un principio fundamental. Se verifica, por ejemplo, que los procesos de contratación hayan seguido todos los pasos de la ley.' },
+        { id: 60, type: 'Teórico', question: 'El propósito de un Catálogo General de Cuentas estandarizado para todo el sector público es:', choices: { a: 'Limitar el número de cuentas que cada entidad puede usar.', b: 'Facilitar la consolidación de la información financiera de todas las entidades del Estado para elaborar los informes de las finanzas públicas.', c: 'Adaptarse a las normas contables de otros países.' }, answer: 'b', explanation: 'Al obligar a todas las entidades a usar el mismo "lenguaje" contable, el Ministerio de Finanzas puede agregar y consolidar la información de manera eficiente y fiable para presentar una visión completa de la situación financiera del Estado ecuatoriano.' },
+        
+        // --- 40 PREGUNTAS PRÁCTICAS ---
+        { id: 61, type: 'Práctico', question: 'Una empresa arrienda una máquina por 3 años con pagos anuales de $10,000 al inicio de cada año. La tasa de interés implícita es del 5%. El valor presente de los pagos de arrendamiento es de $28,594. ¿Cuál es el asiento de diario para registrar el primer pago el día del inicio del contrato?', choices: { a: 'Gasto por Arrendamiento $10,000 (D); Efectivo $10,000 (H).', b: 'Pasivo por Arrendamiento $10,000 (D); Efectivo $10,000 (H).', c: 'Activo por Derecho de Uso $10,000 (D); Efectivo $10,000 (H).' }, answer: 'b', explanation: 'El asiento inicial reconoce el activo y el pasivo total por $28,594. Inmediatamente después, el primer pago reduce el pasivo. Por lo tanto, se debita el Pasivo por Arrendamiento y se acredita el Efectivo.' },
+        { id: 62, type: 'Práctico', question: 'Una empresa vende un paquete de software y soporte por 2 años por $12,000. Por separado, el software vale $10,000 y el soporte $5,000. ¿Qué ingreso se debe reconocer en el momento de la entrega del software según NIIF 15?', choices: { a: '$12,000.', b: '$10,000.', c: '$8,000.' }, answer: 'c', explanation: 'El precio total de venta por separado es $15,000. Se asigna el precio del contrato ($12,000) en proporción. Ingreso del software = $12,000 * ($10,000 / $15,000) = $8,000.' },
+        { id: 63, type: 'Práctico', question: 'Un activo tiene un valor en libros de $100,000. Su valor razonable menos costos de venta es $80,000 y su valor en uso es $85,000. ¿Cuál es la pérdida por deterioro que debe registrarse?', choices: { a: '$20,000.', b: '$15,000.', c: '$0.' }, answer: 'b', explanation: 'El importe recuperable es el mayor entre el valor razonable ($80,000) y el valor en uso ($85,000), es decir, $85,000. La pérdida por deterioro es Valor en Libros - Importe Recuperable = $100,000 - $85,000 = $15,000.' },
+        { id: 64, type: 'Práctico', question: 'Se compra un bono de $100,000 al 5% de cupón por $95,400 (TIR 7%). Al final del primer año, el ingreso por interés a reconocer es:', choices: { a: '$5,000.', b: '$6,678.', c: '$7,000.' }, answer: 'b', explanation: 'El ingreso por interés se calcula con la tasa de interés efectiva (TIR) sobre el valor en libros inicial. Ingreso = $95,400 * 7% = $6,678.' },
+        { id: 65, type: 'Práctico', question: 'Una empresa tiene una depreciación contable de $20,000 y una depreciación fiscal de $15,000. Con una tasa de impuesto del 25%, ¿qué se genera?', choices: { a: 'Un pasivo por impuesto diferido de $1,250.', b: 'Un activo por impuesto diferido de $1,250.', c: 'Una diferencia permanente sin efecto fiscal.' }, answer: 'a', explanation: 'La depreciación contable es mayor, por lo que la utilidad contable es menor que la fiscal. Se paga menos impuesto hoy, pero se pagará más en el futuro. Se genera una diferencia temporaria imponible que resulta en un pasivo por impuesto diferido de ($20,000 - $15,000) * 25% = $1,250.' },
+        { id: 66, type: 'Práctico', question: 'Inventario inicial: 10 u a $5. Compra: 10 u a $7. Venta: 15 u. Usando el método FIFO, el costo de ventas es:', choices: { a: '$90.', b: '$80.', c: '$105.' }, answer: 'b', explanation: 'Bajo FIFO (Primeras en Entrar, Primeras en Salir), se venden primero las 10 unidades de $5 y luego 5 unidades de $7. Costo de Ventas = (10 * $5) + (5 * $7) = $50 + $35 = $80.' },
+        { id: 67, type: 'Práctico', question: 'Adquirente S.A. paga $1,050,000 por Adquirida S.A. Los activos netos identificables a valor razonable de Adquirida son $940,000. ¿Cuál es el goodwill resultante?', choices: { a: '$110,000.', b: '$1,990,000.', c: 'No se genera goodwill, sino una ganancia.' }, answer: 'a', explanation: 'Goodwill = Contraprestación pagada - Valor razonable de los activos netos identificables = $1,050,000 - $940,000 = $110,000.' },
+        { id: 68, type: 'Práctico', question: 'Una empresa es demandada. Los abogados estiman una pérdida probable en un rango de $100,000 a $200,000, sin un monto más probable que otro. ¿Qué provisión debe registrarse según NIC 37?', choices: { a: '$100,000.', b: '$200,000.', c: '$150,000.' }, answer: 'c', explanation: 'Cuando hay un rango y ningún monto es más probable que otro, la norma indica que se debe provisionar el punto medio del rango para ser prudente. ($100,000 + $200,000) / 2 = $150,000.' },
+        { id: 69, type: 'Práctico', question: 'Se realiza una venta a crédito por 1,000 EUR cuando el tipo de cambio es 1.10 USD/EUR. Al cierre del año, el tipo de cambio es 1.12 USD/EUR. El ajuste a registrar es:', choices: { a: 'Una pérdida por diferencia de cambio de $20.', b: 'Una ganancia por diferencia de cambio de $20.', c: 'Ningún ajuste hasta el cobro.' }, answer: 'b', explanation: 'La cuenta por cobrar en USD era de $1,100 (1000 * 1.10). Al cierre, vale $1,120 (1000 * 1.12). La empresa tiene derecho a cobrar más USD, por lo que registra una ganancia de $20.' },
+        { id: 70, type: 'Práctico', question: 'Un edificio con costo de $500,000 y depreciación acumulada de $100,000 se revalúa a un valor razonable de $550,000. ¿Cuál es el superávit por revaluación a registrar en ORI?', choices: { a: '$50,000.', b: '$150,000.', c: '$550,000.' }, answer: 'b', explanation: 'El valor en libros es $400,000 ($500,000 - $100,000). El superávit es la diferencia entre el valor razonable y el valor en libros: $550,000 - $400,000 = $150,000.' },
+        { id: 71, type: 'Práctico', question: 'La utilidad neta es $50,000. La depreciación es $10,000. El aumento en cuentas por cobrar es $5,000. El flujo de efectivo de operación (método indirecto) es:', choices: { a: '$65,000.', b: '$55,000.', c: '$45,000.' }, answer: 'b', explanation: 'Se parte de la utilidad neta, se suma la depreciación (gasto sin efectivo) y se resta el aumento en cuentas por cobrar (uso de efectivo). Flujo = $50,000 + $10,000 - $5,000 = $55,000.' },
+        { id: 72, type: 'Práctico', question: 'Parental Corp. adquiere el 80% de Subsidiaria Inc. El patrimonio de Subsidiaria es $300,000. Existe una plusvalía no registrada en un terreno de $50,000. ¿Cuál es el valor razonable de los activos netos de Subsidiaria para la consolidación?', choices: { a: '$300,000.', b: '$250,000.', c: '$350,000.' }, answer: 'c', explanation: 'Para la consolidación, los activos y pasivos de la subsidiaria deben medirse a valor razonable. Valor razonable = Valor en libros del patrimonio + Plusvalía del terreno = $300,000 + $50,000 = $350,000.' },
+        { id: 73, type: 'Práctico', question: 'Una orden de producción tiene costos de materiales por $2,000 y de mano de obra por $1,500. La tasa de CIF es del 80% del costo de la mano de obra directa. El costo total de la orden es:', choices: { a: '$3,500.', b: '$4,700.', c: '$5,100.' }, answer: 'b', explanation: 'CIF aplicados = $1,500 * 80% = $1,200. Costo total = Materiales + Mano de Obra + CIF = $2,000 + $1,500 + $1,200 = $4,700.' },
+        { id: 74, type: 'Práctico', question: 'En un sistema por procesos, se terminaron 1,000 unidades. Quedaron 200 unidades en proceso, completas al 50% en conversión. La producción equivalente para costos de conversión es:', choices: { a: '1,200 unidades.', b: '1,100 unidades.', c: '1,000 unidades.' }, answer: 'b', explanation: 'Unidades equivalentes = Unidades terminadas + (Unidades en proceso * % de avance) = 1,000 + (200 * 50%) = 1,000 + 100 = 1,100.' },
+        { id: 75, type: 'Práctico', question: 'Una empresa vende un producto a $100. Su costo variable es de $60 y los costos fijos totales son $20,000. ¿Cuál es el punto de equilibrio en unidades?', choices: { a: '200 unidades.', b: '333 unidades.', c: '500 unidades.' }, answer: 'c', explanation: 'El margen de contribución por unidad es $100 - $60 = $40. El punto de equilibrio en unidades se calcula como Costos Fijos / Margen de Contribución por Unidad = $20,000 / $40 = 500 unidades.' },
+        { id: 76, type: 'Práctico', question: 'Una empresa puede fabricar un componente a un costo variable de $15 o comprarlo a $18. Si lo compra, puede alquilar el espacio de la fábrica por $5,000. Se necesitan 2,000 componentes. ¿Qué es mejor?', choices: { a: 'Hacer, se ahorra $1,000.', b: 'Comprar, se ahorra $1,000.', c: 'Comprar, se ahorra $6,000.' }, answer: 'a', explanation: 'Costo de hacer = 2,000 * $15 = $30,000. Costo de comprar = (2,000 * $18) - $5,000 (ingreso por alquiler) = $36,000 - $5,000 = $31,000. Es más barato hacer por $1,000.' },
+        { id: 77, type: 'Práctico', question: 'El estándar de material es 2 kg a $5/kg. Se usaron 2.1 kg a $5.20/kg para una unidad. La variación en precio de materiales es:', choices: { a: '$0.42 Desfavorable.', b: '$0.50 Desfavorable.', c: '$1.04 Desfavorable.' }, answer: 'a', explanation: 'Variación en Precio = (Precio Real - Precio Estándar) * Cantidad Real = ($5.20 - $5.00) * 2.1 kg = $0.20 * 2.1 = $0.42 Desfavorable.' },
+        { id: 78, type: 'Práctico', question: 'Las ventas de enero son $50,000 y las de febrero $60,000. El 70% se cobra en el mes y el 30% al mes siguiente. ¿Cuánto efectivo se cobra en febrero?', choices: { a: '$60,000.', b: '$57,000.', c: '$42,000.' }, answer: 'b', explanation: 'Cobros de febrero = (70% de las ventas de febrero) + (30% de las ventas de enero) = (0.70 * $60,000) + (0.30 * $50,000) = $42,000 + $15,000 = $57,000.' },
+        { id: 79, type: 'Práctico', question: 'Una inversión de $100,000 genera flujos de efectivo anuales de $25,000. ¿Cuál es el período de recuperación (payback)?', choices: { a: '5 años.', b: '4 años.', c: 'No se puede determinar.' }, answer: 'b', explanation: 'Período de Recuperación = Inversión Inicial / Flujo de Efectivo Anual = $100,000 / $25,000 = 4 años.' },
+        { id: 80, type: 'Práctico', question: 'Un producto requiere 2 HMOD. La tasa de CIF tradicional es $10/HMOD. Bajo ABC, se le asignan $25 de CIF. ¿Cuál es la diferencia de asignación por unidad?', choices: { a: 'ABC asigna $5 más.', b: 'El sistema tradicional asigna $5 más.', c: 'No hay diferencia.' }, answer: 'a', explanation: 'CIF tradicional = 2 HMOD * $10/HMOD = $20. CIF ABC = $25. La diferencia es $25 - $20 = $5. ABC asigna $5 más.' },
+        { id: 81, type: 'Práctico', question: 'Una línea de productos tiene un margen de contribución de $50,000 y costos fijos directos de $60,000. Si se elimina la línea, ¿cómo cambiará la utilidad total de la empresa?', choices: { a: 'Aumentará en $10,000.', b: 'Disminuirá en $50,000.', c: 'Disminuirá en $10,000.' }, answer: 'b', explanation: 'Al eliminar la línea, la empresa pierde su margen de contribución de $50,000, pero solo ahorra sus costos fijos directos de $60,000. El impacto neto es una pérdida de $50,000 de contribución que ayudaba a cubrir los costos fijos comunes. La utilidad total disminuirá en $50,000 (el margen de contribución perdido).' },
+        { id: 82, type: 'Práctico', question: 'El costo total para producir 1,000 unidades es $80,000. La empresa quiere un margen de beneficio del 25% sobre el costo. El precio de venta por unidad debe ser:', choices: { a: '$100.', b: '$80.', c: '$106.67.' }, answer: 'a', explanation: 'Costo unitario = $80,000 / 1,000 = $80. Beneficio deseado = $80 * 25% = $20. Precio de venta = Costo + Beneficio = $80 + $20 = $100.' },
+        { id: 83, type: 'Práctico', question: 'Una sociedad tiene una utilidad contable de $80,000. Dentro de sus gastos, incluyó una multa de $5,000 (no deducible). ¿Cuál es la base para el cálculo de la participación de trabajadores (15%)?', choices: { a: '$75,000.', b: '$80,000.', c: '$85,000.' }, answer: 'c', explanation: 'Para la conciliación tributaria, se parte de la utilidad contable y se suman los gastos no deducibles. Base = $80,000 (Utilidad Contable) + $5,000 (Gasto No Deducible) = $85,000.' },
+        { id: 84, type: 'Práctico', question: 'Una empresa vende un servicio por $1,000 + 12% IVA. El cliente, un contribuyente especial, le retiene en la fuente el 2% de IR y el 70% de IVA. ¿Cuánto es el valor neto que recibe la empresa?', choices: { a: '$1,016.', b: '$1,120.', c: '$1,036.' }, answer: 'a', explanation: 'Valor factura = $1,120. Retención IR = $1,000 * 2% = $20. Retención IVA = $120 * 70% = $84. Valor neto a recibir = $1,120 - $20 - $84 = $1,016.' },
+        { id: 85, type: 'Práctico', question: 'Un contribuyente RIMPE Emprendedor tiene ingresos brutos de $60,000. Según la tabla, el impuesto es $360 sobre la fracción básica de $50,000 más el 1.25% sobre el excedente. El impuesto a pagar es:', choices: { a: '$360.', b: '$1,110.', c: '$485.' }, answer: 'c', explanation: 'Excedente = $60,000 - $50,000 = $10,000. Impuesto sobre excedente = $10,000 * 1.25% = $125. Impuesto total = $360 + $125 = $485.' },
+        { id: 86, type: 'Práctico', question: 'Un trabajador con un sueldo de $900 es despedido después de 4 años completos de servicio. La bonificación por desahucio (25% por año) es:', choices: { a: '$900.', b: '$225.', c: '$3,600.' }, answer: 'a', explanation: 'Desahucio = (25% * Último sueldo) * Años de servicio = (0.25 * $900) * 4 = $225 * 4 = $900.' },
+        { id: 87, type: 'Práctico', question: 'Una empresa compra un activo de $50,000 con vida útil de 10 años. Fiscalmente puede usar depreciación acelerada (doble). La diferencia en el gasto por depreciación del primer año completo es:', choices: { a: '$5,000.', b: '$10,000.', c: '$2,500.' }, answer: 'a', explanation: 'Depreciación contable (normal) = $50,000 / 10 = $5,000. Depreciación fiscal (acelerada) = $5,000 * 2 = $10,000. La diferencia es $5,000.' },
+        { id: 88, type: 'Práctico', question: 'Una empresa transfiere $20,000 al exterior para pagar un préstamo a un banco. Del pago, $18,000 son capital y $2,000 son intereses. ¿Sobre qué valor se calcula el ISD (asumiendo que no hay exenciones)?', choices: { a: '$20,000.', b: '$2,000.', c: '$18,000.' }, answer: 'a', explanation: 'El hecho generador del ISD es la transferencia de divisas al exterior. Salvo exenciones específicas (como para créditos con ciertas condiciones), el impuesto se calcula sobre el monto total de la transferencia.' },
+        { id: 89, type: 'Práctico', question: 'Una persona natural tiene ingresos de $40,000 y gastos personales válidos por $6,000. El límite de la rebaja de gastos personales es el 10% de sus ingresos, con un máximo de $4,600. ¿Qué valor puede usar como rebaja?', choices: { a: '$6,000.', b: '$4,000.', c: '$4,600.' }, answer: 'b', explanation: 'El 10% de sus ingresos es $4,000. El máximo absoluto es $4,600. Se debe tomar el menor de los tres valores: sus gastos reales ($6,000), el 10% de sus ingresos ($4,000) y el máximo legal ($4,600). El valor a usar es $4,000.' },
+        { id: 90, type: 'Práctico', question: 'Una sociedad con un patrimonio de $200,000 debe pagar la patente municipal. La fórmula es (Patrimonio / 1000) * 1.5. El impuesto a pagar es:', choices: { a: '$300.', b: '$200.', c: '$150.' }, answer: 'a', explanation: 'Impuesto = ($200,000 / 1000) * 1.5 = 200 * 1.5 = $300.' },
+        { id: 91, type: 'Práctico', question: 'Una sociedad tuvo un impuesto a la renta causado de $10,000 en 20X2 y retenciones en la fuente por $4,000. Su anticipo para 20X3, si se basa en el método del impuesto causado, es:', choices: { a: '$6,000.', b: '$10,000.', c: '$5,000.' }, answer: 'a', explanation: 'El anticipo es el impuesto causado del año anterior menos las retenciones del mismo año. Anticipo = $10,000 - $4,000 = $6,000. (Nota: esta es una fórmula simplificada, la ley contempla varios métodos).' },
+        { id: 92, type: 'Práctico', question: 'Una empresa vende un vehículo usado (activo fijo) por $10,000. ¿Esta venta grava IVA?', choices: { a: 'Sí, grava 12% de IVA.', b: 'No, la venta de activos fijos usados no grava IVA.', c: 'Depende de si el comprador es contribuyente especial.' }, answer: 'b', explanation: 'Según la ley de Régimen Tributario Interno, la venta ocasional de activos fijos que no sean del giro del negocio no está sujeta a IVA.' },
+        { id: 93, type: 'Práctico', question: 'Un auditor establece la materialidad para los estados financieros en $50,000. La materialidad de ejecución, típicamente, se establecería en un rango de:', choices: { a: '$50,000 a $60,000.', b: '$25,000 a $37,500.', c: '$5,000 a $10,000.' }, answer: 'b', explanation: 'La materialidad de ejecución se fija como un porcentaje (comúnmente entre 50% y 75%) de la materialidad general para reducir la probabilidad de que el agregado de errores no detectados supere la materialidad total.' },
+        { id: 94, type: 'Práctico', question: 'Usted está auditando las Cuentas por Pagar. El saldo según libros es $150,000. Su procedimiento de "búsqueda de pasivos no registrados" revela facturas por $15,000 que corresponden a servicios recibidos antes del cierre del año pero que no fueron registradas. ¿Cuál es el saldo ajustado de las Cuentas por Pagar?', choices: { a: '$135,000.', b: '$150,000.', c: '$165,000.' }, answer: 'c', explanation: 'El objetivo de la búsqueda de pasivos no registrados es verificar la integridad de las cuentas por pagar. Al encontrar pasivos que debieron ser registrados, el auditor propone un ajuste para aumentar el saldo. Saldo ajustado = $150,000 + $15,000 = $165,000.' },
+        { id: 95, type: 'Práctico', question: 'En una muestra de 100 facturas de compra, el auditor encuentra 3 que no tienen la aprobación del gerente de departamento, lo cual es una desviación del control. La tasa de desviación de la muestra es:', choices: { a: '100%.', b: '97%.', c: '3%.' }, answer: 'c', explanation: 'La tasa de desviación de la muestra es el número de desviaciones encontradas dividido por el tamaño de la muestra. Tasa = 3 / 100 = 3%.' },
+        { id: 96, type: 'Práctico', question: 'Durante el conteo físico de inventario, el auditor realiza "conteos de prueba" (test counts). Esto implica:', choices: { a: 'Contar todo el inventario de nuevo.', b: 'Seleccionar una muestra de items del listado de la empresa y contarlos físicamente, y seleccionar items del piso de la bodega y rastrearlos al listado.', c: 'Pedirle al personal de la empresa que cuente una sección dos veces.' }, answer: 'b', explanation: 'Los conteos de prueba se realizan en dos direcciones para probar la integridad (del piso al listado) y la existencia (del listado al piso) del inventario registrado por la empresa.' },
+        { id: 97, type: 'Práctico', question: 'Un procedimiento analítico para la nómina revela que el gasto en sueldos aumentó un 15% mientras que el número de empleados solo aumentó un 2%. Esta situación podría indicar:', choices: { a: 'Un error en el cálculo de la depreciación.', b: 'Un posible fraude por empleados fantasma o aumentos de sueldo no autorizados.', c: 'Que la empresa está cumpliendo con el pago de utilidades.' }, answer: 'b', explanation: 'Una fluctuación tan inusual en la relación entre el gasto de nómina y el número de empleados es una "bandera roja" que requiere una investigación más profunda por parte del auditor, ya que no tiene una explicación comercial obvia.' },
+        { id: 98, type: 'Práctico', question: 'El auditor determina que una incorrección de $10,000 en la cuenta de ingresos es material. La gerencia se niega a corregirla. El auditor debe:', choices: { a: 'Ignorar la incorrección porque la gerencia no la quiere corregir.', b: 'Emitir una opinión no modificada (limpia).', c: 'Emitir una opinión modificada (con salvedades o adversa, dependiendo de la generalización del efecto).' }, answer: 'c', explanation: 'El auditor es independiente. Si una incorrección es material y la gerencia no la corrige, el auditor tiene la responsabilidad de modificar su opinión para informar a los usuarios que los estados financieros no están presentados de manera fiel.' },
+        { id: 99, type: 'Práctico', question: 'La empresa tiene activos totales de $1,000,000 y pasivos totales de $800,000. Su principal competidor tiene una razón de deuda a activos del 50%. Esto indica que la empresa cliente:', choices: { a: 'Tiene un menor riesgo financiero que su competidor.', b: 'Tiene un mayor riesgo financiero que su competidor.', c: 'Tiene la misma estructura de capital que su competidor.' }, answer: 'b', explanation: 'La razón de deuda a activos de la empresa es $800,000 / $1,000,000 = 80%. Un 80% de apalancamiento es significativamente mayor que el 50% de su competidor, lo que indica una mayor dependencia de la deuda y, por lo tanto, un mayor riesgo financiero.' },
+        { id: 100, type: 'Práctico', question: 'Usted está auditando una estimación de Nivel 3 (ej. valoración de un activo intangible sin mercado). La gerencia proporciona un modelo de valoración complejo. Un procedimiento de auditoría clave sería:', choices: { a: 'Aceptar el modelo sin cuestionarlo porque la gerencia es responsable de él.', b: 'Probar la exactitud matemática del modelo y evaluar la razonabilidad de los supuestos clave utilizados (ej. tasa de crecimiento, tasa de descuento).', c: 'Confirmar el valor con el banco de la empresa.' }, answer: 'b', explanation: 'Para estimaciones complejas y subjetivas, el auditor no puede simplemente verificar el cálculo. Debe aplicar escepticismo profesional y evaluar críticamente los datos de entrada y los supuestos que sustentan la estimación, ya que es aquí donde reside el mayor riesgo de incorrección.' }
+    ];
+
+
+    const AppController = function() {
+        this.quizState = 'start'; // start, active, finished
+        this.questions = questionsData;
+        this.currentIndex = 0;
+        this.userAnswers = new Array(this.questions.length).fill(null);
+        this.timerInterval = null;
+        this.timeLeft = 150 * 60; // 150 minutes in seconds
+
+        this.dom = {
+            startScreen: document.getElementById('start-screen'),
+            quizScreen: document.getElementById('quiz-screen'),
+            resultsScreen: document.getElementById('results-screen'),
+            reviewScreen: document.getElementById('review-screen'),
+            startBtn: document.getElementById('start-quiz-btn'),
+            questionNumber: document.getElementById('question-number'),
+            questionText: document.getElementById('question-text'),
+            choicesContainer: document.getElementById('choices-container'),
+            progressBar: document.getElementById('progress-bar'),
+            timer: document.getElementById('timer'),
+            prevBtn: document.getElementById('prev-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            finishBtn: document.getElementById('finish-btn'),
+            score: document.getElementById('score'),
+            scoreMessage: document.getElementById('score-message'),
+            restartBtn: document.getElementById('restart-quiz-btn'),
+            reviewBtn: document.getElementById('review-answers-btn'),
+            reviewContainer: document.getElementById('review-container'),
+            backToResultsBtn: document.getElementById('back-to-results-btn'),
         };
 
-        const renderContent = () => {
-            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
-            if (!topic) return;
+        this.init = () => {
+            this.dom.startBtn.addEventListener('click', this.startQuiz);
+            this.dom.prevBtn.addEventListener('click', () => this.navigateQuestion('prev'));
+            this.dom.nextBtn.addEventListener('click', () => this.navigateQuestion('next'));
+            this.dom.finishBtn.addEventListener('click', this.finishQuiz);
+            this.dom.restartBtn.addEventListener('click', this.restartQuiz);
+            this.dom.reviewBtn.addEventListener('click', this.reviewAnswers);
+            this.dom.backToResultsBtn.addEventListener('click', this.showResultsScreen);
+        };
 
-            const examplesHtml = topic.examples.map(ex => {
-                let tableHtml = '';
-                if (ex.table) {
-                    const headers = ex.table.headers.map(h => `<th scope="col" class="px-4 py-2">${h}</th>`).join('');
-                    const rows = ex.table.rows.map(r => `
-                        <tr class="border-b border-slate-200">
-                            ${r.map(cell => `<td class="px-4 py-2">${cell}</td>`).join('')}
-                        </tr>
-                    `).join('');
-                    
-                    if (ex.table.isTAccount) {
-                         tableHtml = `
-                            <div class="border-b-2 border-slate-800 w-full max-w-md mx-auto relative">
-                                <div class="absolute top-0 left-1/2 h-full w-px bg-slate-800"></div>
-                                <div class="flex">
-                                    <div class="w-1/2 p-2 text-center font-semibold">${ex.table.headers[0]}</div>
-                                    <div class="w-1/2 p-2 text-center font-semibold">${ex.table.headers[1]}</div>
-                                </div>
-                            </div>
-                            <div class="w-full max-w-md mx-auto relative">
-                                <div class="absolute top-0 left-1/2 h-full w-px bg-slate-400"></div>
-                                ${ex.table.rows.map(r => `
-                                    <div class="flex">
-                                        <div class="w-1/2 p-2 text-left">${r[0]}</div>
-                                        <div class="w-1/2 p-2 text-right">${r[1]}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                         `;
-                    } else {
-                        tableHtml = `
-                            <div class="overflow-x-auto mt-2">
-                                <table class="w-full text-sm text-left text-slate-600">
-                                    <thead class="text-xs text-slate-700 uppercase bg-slate-100">
-                                        <tr>${headers}</tr>
-                                    </thead>
-                                    <tbody>${rows}</tbody>
-                                </table>
-                            </div>
-                        `;
-                    }
+        this.startQuiz = () => {
+            this.quizState = 'active';
+            this.dom.startScreen.classList.add('hidden');
+            this.dom.quizScreen.classList.remove('hidden');
+            this.startTimer();
+            this.renderQuestion();
+        };
+
+        this.startTimer = () => {
+            this.timerInterval = setInterval(() => {
+                this.timeLeft--;
+                this.updateTimerDisplay();
+                if (this.timeLeft <= 0) {
+                    this.finishQuiz();
                 }
-                return `
-                    <div class="mb-6 p-4 bg-slate-50 rounded-lg">
-                        <h4 class="font-semibold text-slate-800">${ex.title}</h4>
-                        <p class="text-sm text-slate-600 mb-2">${ex.description}</p>
-                        ${tableHtml}
+            }, 1000);
+        };
+
+        this.updateTimerDisplay = () => {
+            const hours = Math.floor(this.timeLeft / 3600);
+            const minutes = Math.floor((this.timeLeft % 3600) / 60);
+            const seconds = this.timeLeft % 60;
+            this.dom.timer.textContent = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        };
+
+        this.renderQuestion = () => {
+            const question = this.questions[this.currentIndex];
+            this.dom.questionNumber.textContent = this.currentIndex + 1;
+            this.dom.questionText.innerHTML = question.question;
+
+            this.dom.choicesContainer.innerHTML = '';
+            for (const key in question.choices) {
+                const choiceBtn = document.createElement('button');
+                choiceBtn.className = 'quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100';
+                choiceBtn.innerHTML = `<span class="font-bold mr-2">${key.toUpperCase()})</span> ${question.choices[key]}`;
+                choiceBtn.dataset.choice = key;
+                if (this.userAnswers[this.currentIndex] === key) {
+                    choiceBtn.classList.add('selected');
+                }
+                choiceBtn.addEventListener('click', () => this.selectAnswer(key));
+                this.dom.choicesContainer.appendChild(choiceBtn);
+            }
+            
+            this.updateNavigation();
+            this.updateProgressBar();
+        };
+        
+        this.selectAnswer = (choice) => {
+            this.userAnswers[this.currentIndex] = choice;
+            this.renderQuestion(); // Re-render to show selection
+        };
+
+        this.updateNavigation = () => {
+            this.dom.prevBtn.disabled = this.currentIndex === 0;
+            this.dom.nextBtn.classList.toggle('hidden', this.currentIndex === this.questions.length - 1);
+            this.dom.finishBtn.classList.toggle('hidden', this.currentIndex !== this.questions.length - 1);
+        };
+
+        this.updateProgressBar = () => {
+            const progress = ((this.currentIndex + 1) / this.questions.length) * 100;
+            this.dom.progressBar.style.width = `${progress}%`;
+        };
+        
+        this.navigateQuestion = (direction) => {
+            if (direction === 'next' && this.currentIndex < this.questions.length - 1) {
+                this.currentIndex++;
+            } else if (direction === 'prev' && this.currentIndex > 0) {
+                this.currentIndex--;
+            }
+            this.renderQuestion();
+        };
+
+        this.finishQuiz = () => {
+            clearInterval(this.timerInterval);
+            this.quizState = 'finished';
+            const score = this.calculateScore();
+            this.dom.score.textContent = score;
+            
+            let message = '';
+            const percentage = (score / this.questions.length) * 100;
+            if (percentage >= 70) {
+                message = '¡Excelente trabajo! Has aprobado el examen.';
+                this.dom.scoreMessage.className = 'text-lg font-medium mb-8 text-green-600';
+            } else {
+                message = 'Necesitas repasar un poco más. ¡No te rindas!';
+                this.dom.scoreMessage.className = 'text-lg font-medium mb-8 text-red-600';
+            }
+            this.dom.scoreMessage.textContent = message;
+
+            this.showResultsScreen();
+        };
+        
+        this.showResultsScreen = () => {
+            this.dom.quizScreen.classList.add('hidden');
+            this.dom.reviewScreen.classList.add('hidden');
+            this.dom.resultsScreen.classList.remove('hidden');
+        };
+
+        this.calculateScore = () => {
+            return this.userAnswers.reduce((score, answer, index) => {
+                if (answer === this.questions[index].answer) {
+                    return score + 1;
+                }
+                return score;
+            }, 0);
+        };
+
+        this.restartQuiz = () => {
+            this.quizState = 'start';
+            this.currentIndex = 0;
+            this.userAnswers.fill(null);
+            this.timeLeft = 150 * 60;
+            this.updateTimerDisplay();
+            this.dom.resultsScreen.classList.add('hidden');
+            this.dom.startScreen.classList.remove('hidden');
+        };
+
+        this.reviewAnswers = () => {
+            this.dom.resultsScreen.classList.add('hidden');
+            this.dom.reviewScreen.classList.remove('hidden');
+            this.dom.reviewContainer.innerHTML = '';
+
+            this.questions.forEach((q, index) => {
+                const userAnswer = this.userAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+                
+                let choicesHtml = '';
+                for (const key in q.choices) {
+                    let choiceClass = 'quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg';
+                    if (key === q.answer) {
+                        choiceClass += ' correct';
+                    } else if (key === userAnswer && !isCorrect) {
+                        choiceClass += ' incorrect';
+                    }
+                    choicesHtml += `<button class="${choiceClass}" disabled><span class="font-bold mr-2">${key.toUpperCase()})</span> ${q.choices[key]}</button>`;
+                }
+
+                const reviewBlock = `
+                    <div class="mb-8 p-4 border rounded-lg ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}">
+                        <p class="font-bold text-slate-900 mb-2">${index + 1}. ${q.question}</p>
+                        <div class="space-y-2 mb-4">${choicesHtml}</div>
+                        <div class="p-3 bg-slate-100 rounded">
+                            <p class="font-semibold text-slate-800">Justificación:</p>
+                            <p class="text-sm text-slate-700">${q.explanation}</p>
+                        </div>
                     </div>
                 `;
-            }).join('');
-
-            const quizHtml = topic.quiz.length > 0 ? `
-                <div class="mt-8 pt-6 border-t border-slate-200">
-                    <h3 class="text-xl font-bold text-slate-900 mb-4">Preguntas de Evaluación</h3>
-                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
-                </div>
-            ` : '';
-
-            contentContainer.innerHTML = `
-                <div id="${topic.id}" class="content-section active">
-                    ${topic.explanation}
-                    ${topic.examples.length > 0 ? `<div class="mt-8"><h3 class="text-xl font-bold text-slate-900 mb-4">Ejemplos Prácticos</h3>${examplesHtml}</div>` : ''}
-                    ${quizHtml}
-                </div>
-            `;
-            
-            if (topic.quiz.length > 0) {
-                renderQuiz(topic.id, 0);
-            }
-        };
-
-        const renderQuiz = (topicId, questionIndex) => {
-            const topic = studyGuideData.topics.find(t => t.id === topicId);
-            if (!topic || questionIndex >= topic.quiz.length) {
-                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas de esta sección!</p>`;
-                return;
-            }
-
-            const quizContainer = document.getElementById('quiz-container');
-            const questionData = topic.quiz[questionIndex];
-
-            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
-                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
-                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
-                </button>
-            `).join('');
-
-            quizContainer.innerHTML = `
-                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
-                <div class="space-y-3">${choicesHtml}</div>
-                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
-                <div class="text-right mt-4">
-                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente Pregunta</button>
-                </div>
-            `;
-
-            attachQuizListeners(topicId, questionIndex);
-        };
-
-        const attachQuizListeners = (topicId, questionIndex) => {
-            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
-            const feedbackEl = document.getElementById('quiz-feedback');
-            const nextBtn = document.getElementById('next-q-btn');
-            
-            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const selectedChoice = e.currentTarget.dataset.choice;
-                    
-                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
-
-                    if (selectedChoice === questionData.answer) {
-                        e.currentTarget.classList.add('correct');
-                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
-                        feedbackEl.classList.remove('hidden');
-                    } else {
-                        e.currentTarget.classList.add('incorrect');
-                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
-                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
-                        feedbackEl.classList.remove('hidden');
-                    }
-                    nextBtn.disabled = false;
-                });
-            });
-
-            nextBtn.addEventListener('click', () => {
-                renderQuiz(topicId, questionIndex + 1);
+                this.dom.reviewContainer.innerHTML += reviewBlock;
             });
         };
 
-        navContainer.addEventListener('click', (e) => {
-            if (e.target.closest('.tab')) {
-                const topicId = e.target.closest('.tab').dataset.topicId;
-                if (topicId !== currentTopicId) {
-                    currentTopicId = topicId;
-                    renderNav();
-                    renderContent();
-                }
-            }
-        });
+    };
 
-        // Initial render
-        renderNav();
-        renderContent();
-    });
+    const app = new AppController();
+    document.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
 </html>
