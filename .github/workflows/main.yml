@@ -20,10 +20,12 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      # 2. Reemplaza el marcador de posición con el secret
-      - name: Replace API Key 🔑
-        # Usamos el comando 'sed' para buscar y reemplazar texto en script.js
-        run: sed -i 's|__API_KEY_PLACEHOLDER__|${{ secrets.API_KEY_CLIMA }}|g' script.js
+      # 2. Reemplaza los marcadores de posición con los secrets
+      - name: Replace Supabase URL 🔗
+        run: sed -i 's|__SUPABASE_URL_PLACEHOLDER__|${{ secrets.SUPABASE_URL }}|g' config.js
+
+      - name: Replace Supabase Key 🔑
+        run: sed -i 's|__SUPABASE_KEY_PLACEHOLDER__|${{ secrets.SUPABASE_KEY }}|g' config.js
 
       # 3. Prepara los archivos para publicarlos
       - name: Setup Pages 📄
