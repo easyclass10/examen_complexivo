@@ -22,12 +22,12 @@ jobs:
 
       # 2. Reemplaza los marcadores de posición en script.js
       - name: Replace Supabase URL 🔗
-        # CORRECCIÓN: Apunta a script.js en lugar de config.js
-        run: sed -i 's|__SUPABASE_URL_PLACEHOLDER__|${{ secrets.SUPABASE_URL }}|g' script.js
+        # CORRECCIÓN: Se usa el marcador de posición exacto de tu script.js
+        run: sed -i 's|__SUPABASE_URL__|${{ secrets.SUPABASE_URL }}|g' script.js
 
       - name: Replace Supabase Key 🔑
-        # CORRECCIÓN: Apunta a script.js en lugar de config.js
-        run: sed -i 's|__SUPABASE_KEY_PLACEHOLDER__|${{ secrets.SUPABASE_KEY }}|g' script.js
+        # CORRECCIÓN: Se usa el marcador de posición exacto de tu script.js
+        run: sed -i 's|__SUPABASE_KEY__|${{ secrets.SUPABASE_KEY }}|g' script.js
 
       # 3. Prepara los archivos para publicarlos
       - name: Setup Pages 📄
