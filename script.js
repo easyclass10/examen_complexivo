@@ -142,7 +142,7 @@
                     if (currentUserSession) {
                         //showSubjectContent(subjectKey);
                         switch (subjectKey) {
-                            case 'costos':
+                           case 'costos':
                                 window.location.href = 'z2.html';
                                 break;
                             case 'presupuestos':
@@ -155,21 +155,24 @@
                                 window.location.href = 'z5.html';
                                 break;
                             case 'sup_1':
-                                window.location.href = 'z6.html';
+                                window.location.href = 'z5.html';
                                 break;
                             case 'sup_2':
-                                window.location.href = 'z7.html';
+                                window.location.href = 'z6.html';
                                 break;
                             case 'tributaria':
-                                window.location.href = 'z8.html';
+                                window.location.href = 'z7.html';
                                 break;
                             case 'aud_finan':
-                                window.location.href = 'z9.html';
+                                window.location.href = 'z8.html';
                                 break;
                             case 'aud_gestion':
-                                window.location.href = 'z10.html';
+                                window.location.href = 'z9.html';
                                 break;
                             case 'aud_forense':
+                                window.location.href = 'z10.html';
+                                break;
+                            case 'simulacro':
                                 window.location.href = 'z11.html';
                                 break;
                         }
@@ -189,4 +192,5 @@
         supabaseClient.auth.onAuthStateChange((_event, session) => {
             updateUI(session);
         });
+
     
