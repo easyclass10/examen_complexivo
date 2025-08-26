@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 40; justify-content: center; align-items: center; }
+        .modal-backdrop.active { display: flex; }
+        .modal-content { background-color: white; padding: 2rem; border-radius: 0.75rem; }
+    
+    
+
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+    </style>
+
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div id="user-session" class="flex items-center gap-4 hidden">
+                <span id="user-email" class="text-sm font-medium text-slate-300"></span>
+                <button id="show-login-modal-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    👤 Iniciar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    
+ 
+
+    <div id="auth-modal" class="modal-backdrop">
+        <div class="modal-content w-full max-w-md relative">
+            <button id="close-modal" class="absolute top-3 right-4 text-3xl text-slate-400 hover:text-slate-700">&times;</button>
+            <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Iniciar Sesión</h2>
+            <div id="auth-feedback" class="text-center mb-4 text-sm font-semibold"></div>
+            <form id="auth-form" class="space-y-4">
+                <input type="email" id="email" required placeholder="Correo Electrónico" class="w-full p-2 border rounded">
+                <input type="password" id="password" required placeholder="Contraseña" class="w-full p-2 border rounded">
+                <button type="submit" class="w-full py-3 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Entrar</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const supabaseClient = supabase.createClient('https://cgpioodxsryqfyofjfvy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncGlvb2R4c3J5cWZ5b2ZqZnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MTY2MjIsImV4cCI6MjA2MzI5MjYyMn0.TB8MmMzMc18hktGiWal_Fjmuq4ptqp7pz3mi0o8LJLY');
+        
+        const userSessionEl = document.getElementById('user-session');
+        const userEmailEl = document.getElementById('user-email');
+        const logoutButton = document.getElementById('show-login-modal-button');
+        
+        // --- GUARDIA DE LA PÁGINA ---
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+            if (!session) {
+                // Si el usuario ya tiene sesión, lo enviamos a la página de inicio correcta.
+                window.location.href = 'index.html';
+            } else {
+                // Si hay sesión, mostrar la información del usuario.
+                userEmailEl.textContent = session.user.email;
+                userSessionEl.classList.remove('hidden');
+            }
+        });
+
+        // --- LÓGICA DEL MODAL ---
+        const showLoginModalButton = document.getElementById('show-login-modal-button');
+        const authModal = document.getElementById('auth-modal');
+        const authForm = document.getElementById('auth-form');
+        const authFeedback = document.getElementById('auth-feedback');
+        const closeModalButton = document.getElementById('close-modal');
+
+        const handleLogin = async (email, password) => {
+            try {
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                // El 'onAuthStateChange' se encargará de la redirección
+            } catch (error) {
+                authFeedback.textContent = 'Correo o contraseña incorrectos.';
+                authFeedback.style.color = 'red';
+            }
+        };
+
+        showLoginModalButton.addEventListener('click', () => authModal.classList.add('active'));
+        closeModalButton.addEventListener('click', () => authModal.classList.remove('active'));
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleLogin(authForm.email.value, authForm.password.value);
+        });
+    </script>
+
+       <script>
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'jornalizacion',
+                title: 'Jornalización',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 1: Jornalización – El Registro Original de las Transacciones</h2>
+                    <p class="mb-4">La jornalización es el punto de partida del ciclo contable. Consiste en registrar cronológicamente todas las transacciones económicas de una entidad en el libro conocido como Diario General. Cada registro, denominado "asiento de diario", representa la traducción de un evento económico al lenguaje de la contabilidad, basándose en el principio de partida doble donde $Activo = Pasivo + Patrimonio$.</p>
+                    <p class="mb-4">El proceso implica analizar cada transacción para identificar las cuentas afectadas, determinar si aumentan o disminuyen, y aplicar las reglas del débito y el crédito. Todo asiento debe estar respaldado por un documento fuente (facturas, recibos) y seguir el Plan de Cuentas de la empresa.</p>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><b>Activos y Gastos:</b> Aumentan con un débito, disminuyen con un crédito.</li>
+                        <li><b>Pasivos, Patrimonio e Ingresos:</b> Aumentan con un crédito, disminuyen con un débito.</li>
+                    </ul>
+                `,
+                examples: [
+                    {
+                        title: 'Caso 1: Aporte de Capital Inicial',
+                        description: 'El 1 de enero, los socios de "TecnoSoluciones S.A." inician operaciones. El Socio A aporta $20,000 en efectivo y el Socio B aporta equipos de cómputo valorados en $5,000.',
+                        table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['01/01/202X', 'Efectivo', '20,000.00', ''],
+                                ['', 'Equipo de Cómputo', '5,000.00', ''],
+                                ['', 'Capital Social', '', '25,000.00'],
+                                ['', '<i>Para registrar aportes iniciales de socios.</i>', '', '']
+                            ]
+                        }
+                    },
+                    {
+                        title: 'Caso 2: Compra de Inventario a Crédito con IVA',
+                        description: 'El 5 de enero, TecnoSoluciones S.A. compra mercadería por $10,000 más 12% de IVA a su proveedor "GlobalTech", bajo condiciones 2/10, n/30.',
+                        table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['05/01/202X', 'Inventario de Mercaderías', '10,000.00', ''],
+                                ['', 'IVA Pagado (Crédito Tributario)', '1,200.00', ''],
+                                ['', 'Cuentas por Pagar a Proveedores', '', '11,200.00'],
+                                ['', '<i>Para registrar compra de inventario a crédito.</i>', '', '']
+                            ]
+                        }
+                    },
+                    {
+                        title: 'Caso 3: Venta de Servicios con IVA',
+                        description: 'El 15 de enero, la empresa presta servicios de consultoría. Un cliente paga $3,000 al contado y otro cliente queda debiendo $2,000. Ambas transacciones más 12% de IVA.',
+                         table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['15/01/202X', 'Efectivo ($3,000 x 1.12)', '3,360.00', ''],
+                                ['', 'Cuentas por Cobrar a Clientes ($2,000 x 1.12)', '2,240.00', ''],
+                                ['', 'Ingresos por Servicios', '', '5,000.00'],
+                                ['', 'IVA Cobrado (Débito Tributario)', '', '600.00'],
+                                ['', '<i>Para registrar venta de servicios.</i>', '', '']
+                            ]
+                        }
+                    },
+                     {
+                        title: 'Caso 4: Pago de Sueldos y Retenciones',
+                        description: 'El 30 de enero, se paga la nómina del mes. El gasto total en sueldos es de $4,000. Se retiene un 9.45% por aporte al seguro social ($378) y $100 de impuesto a la renta.',
+                         table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['30/01/202X', 'Gasto Sueldos y Salarios', '4,000.00', ''],
+                                ['', 'Aportes al IESS por Pagar', '', '378.00'],
+                                ['', 'Retenciones de Imp. Renta por Pagar', '', '100.00'],
+                                ['', 'Efectivo', '', '3,522.00'],
+                                ['', '<i>Para registrar pago de nómina de enero.</i>', '', '']
+                            ]
+                        }
+                    },
+                    {
+                        title: 'Caso 5: Obtención de un Préstamo Bancario',
+                        description: 'El 31 de enero, la empresa recibe un préstamo del Banco del Pacífico por $50,000 a 5 años plazo, que es depositado directamente en su cuenta corriente.',
+                         table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['31/01/202X', 'Efectivo', '50,000.00', ''],
+                                ['', 'Préstamo Bancario por Pagar (Largo Plazo)', '', '50,000.00'],
+                                ['', '<i>Para registrar obtención de préstamo bancario.</i>', '', '']
+                            ]
+                        }
+                    }
+                ],
+                quiz: [
+                    {
+                        question: 'Una empresa adquiere un vehículo por $30,000. Paga un 20% como cuota inicial en efectivo y firma un documento por pagar a 36 meses por el saldo. La transacción también está sujeta a un 12% de IVA sobre el valor total del vehículo. ¿Cuál es el asiento de diario correcto?',
+                        choices: {
+                            a: 'Vehículos $30,000 (D); Efectivo $6,000 (H); Documentos por Pagar $24,000 (H); IVA Pagado $3,600 (H).',
+                            b: 'Vehículos $33,600 (D); Efectivo $6,720 (H); Documentos por Pagar $26,880 (H).',
+                            c: 'Vehículos $30,000 (D); IVA Pagado $3,600 (D); Efectivo $6,720 (H); Documentos por Pagar $26,880 (H).'
+                        },
+                        answer: 'c',
+                        explanation: 'El costo del activo (Vehículos) es $30,000. El IVA (12%) es $3,600, un activo (débito). El total a financiar es $33,600. La cuota inicial es $33,600 * 0.20 = $6,720 (crédito a Efectivo). El saldo de $26,880 es un pasivo (crédito a Documentos por Pagar).'
+                    },
+                    {
+                        question: 'Una empresa vende mercadería por $15,000 más 12% de IVA a crédito. El costo de la mercadería es de $9,000 (sistema perpetuo). ¿Cómo se registra correctamente?',
+                        choices: {
+                            a: 'Cuentas por Cobrar $16,800 (D); Ingresos por Ventas $15,000 (H); IVA Cobrado $1,800 (H).',
+                            b: 'Cuentas por Cobrar $16,800 (D); Costo de Ventas $9,000 (D); Ingresos por Ventas $15,000 (H); IVA Cobrado $1,800 (H); Inventario $9,000 (H).',
+                            c: 'Asiento 1: Cuentas por Cobrar $16,800 (D); Ingresos por Ventas $15,000 (H); IVA Cobrado $1,800 (H). Asiento 2: Costo de Ventas $9,000 (D); Inventario $9,000 (H).'
+                        },
+                        answer: 'c',
+                        explanation: 'En el sistema perpetuo, se registran dos asientos. El primero reconoce la venta y la cuenta por cobrar. El segundo registra el costo de la venta y da de baja el inventario. La opción c) representa correctamente esta separación conceptual.'
+                    },
+                    {
+                        question: 'Se paga una póliza de seguro de 24 meses por $4,800 en efectivo. ¿Cuál es el asiento inicial?',
+                        choices: {
+                            a: 'Gasto Seguro $4,800 (D); Efectivo $4,800 (H).',
+                            b: 'Seguro Pagado por Anticipado $4,800 (D); Efectivo $4,800 (H).',
+                            c: 'Gasto Seguro $200 (D); Seguro Pagado por Anticipado $4,600 (D); Efectivo $4,800 (H).'
+                        },
+                        answer: 'b',
+                        explanation: 'El pago crea un recurso futuro. Según el principio de devengo, se registra como un activo ("Seguro Pagado por Anticipado") y el gasto se reconocerá mensualmente a través de asientos de ajuste.'
+                    },
+                    {
+                        question: 'Un cliente devuelve mercadería comprada a crédito por $1,000 (+12% IVA). El costo era de $600. ¿Cuál es el asiento correcto en un sistema perpetuo?',
+                        choices: {
+                            a: 'Devoluciones en Ventas $1,000 (D); IVA Cobrado $120 (D); Cuentas por Cobrar $1,120 (H).',
+                            b: 'Devoluciones en Ventas $1,000 (D); IVA Cobrado $120 (D); Inventario $600 (D); Cuentas por Cobrar $1,120 (H); Costo de Ventas $600 (H).',
+                            c: 'Cuentas por Cobrar $1,120 (D); Devoluciones en Ventas $1,000 (H); IVA Cobrado $120 (H).'
+                        },
+                        answer: 'b',
+                        explanation: 'Se requiere revertir ambos efectos de la venta original. Se registra la devolución y se reduce la cuenta por cobrar. Simultáneamente, la mercadería regresa al inventario (débito) y se revierte el costo de venta (crédito). La opción b) combina correctamente ambos asientos.'
+                    },
+                    {
+                        question: 'Se compra inventario a crédito por $20,000 con términos 3/15, n/45. Si se paga en 10 días, ¿cuál es el asiento de pago?',
+                        choices: {
+                            a: 'Cuentas por Pagar $20,000 (D); Efectivo $19,400 (H); Descuento en Compras $600 (H).',
+                            b: 'Cuentas por Pagar $20,000 (D); Efectivo $20,000 (H).',
+                            c: 'Cuentas por Pagar $19,400 (D); Efectivo $19,400 (H).'
+                        },
+                        answer: 'a',
+                        explanation: 'El descuento es del 3% sobre $20,000, es decir, $600. El pago en efectivo es de $19,400. El asiento debe saldar la totalidad de la deuda ($20,000), registrar la salida de efectivo y reconocer el descuento obtenido.'
+                    },
+                    {
+                        question: 'Una empresa declara y paga dividendos en efectivo por $10,000. ¿Cuál es el impacto en la ecuación contable?',
+                        choices: {
+                            a: 'Disminuye Activos (Efectivo) y disminuye Patrimonio (Utilidades Retenidas).',
+                            b: 'Disminuye Activos (Efectivo) y aumenta Pasivos (Dividendos por Pagar).',
+                            c: 'Aumenta Gastos (Gasto por Dividendo) y disminuye Activos (Efectivo).'
+                        },
+                        answer: 'a',
+                        explanation: 'El pago de dividendos es una distribución de utilidades, no un gasto. Reduce directamente los activos (Efectivo) y el patrimonio (Utilidades Retenidas).'
+                    },
+                    {
+                        question: 'Se reciben $12,000 de un cliente como pago anticipado por un proyecto de 6 meses. ¿Cuál es el asiento al recibir el efectivo?',
+                        choices: {
+                            a: 'Efectivo $12,000 (D); Ingresos por Servicios $12,000 (H).',
+                            b: 'Efectivo $12,000 (D); Ingresos no Devengados $12,000 (H).',
+                            c: 'Cuentas por Cobrar $12,000 (D); Ingresos por Servicios $12,000 (H).'
+                        },
+                        answer: 'b',
+                        explanation: 'El ingreso no se ha ganado todavía. Al recibir el efectivo, se crea un pasivo ("Ingresos no Devengados") que representa la obligación de prestar el servicio en el futuro.'
+                    },
+                    {
+                        question: 'Se compra maquinaria por $100,000, pagando además $5,000 por transporte y $3,000 por instalación. ¿Por qué valor se debe registrar la maquinaria?',
+                        choices: {
+                            a: 'Un débito a Maquinaria por $100,000 y débitos a gastos por $8,000.',
+                            b: 'Un débito a Maquinaria por $108,000.',
+                            c: 'Un débito a Maquinaria por $100,000 y un débito a Gastos Operativos por $8,000.'
+                        },
+                        answer: 'b',
+                        explanation: 'El principio de costo histórico dicta que un activo fijo se registra por todos los costos necesarios para ponerlo en funcionamiento. Esto incluye precio de compra, transporte e instalación. El costo total capitalizable es $108,000.'
+                    },
+                    {
+                        question: 'Una empresa recompra 1,000 de sus propias acciones a $10 cada una, usando efectivo. ¿Cuál es el asiento de diario?',
+                        choices: {
+                            a: 'Gasto por Recompra de Acciones $10,000 (D); Efectivo $10,000 (H).',
+                            b: 'Utilidades Retenidas $10,000 (D); Efectivo $10,000 (H).',
+                            c: 'Acciones en Tesorería $10,000 (D); Efectivo $10,000 (H).'
+                        },
+                        answer: 'c',
+                        explanation: 'Las acciones recompradas se registran en una cuenta de contra-patrimonio llamada "Acciones en Tesorería". Se debita por el costo de adquisición y se acredita el efectivo utilizado.'
+                    },
+                    {
+                        question: 'Un abogado presta servicios por $2,500 en enero. La factura llega el 31 de enero pero se pagará en febrero. ¿Qué asiento se registra el 31 de enero?',
+                        choices: {
+                            a: 'No se registra ningún asiento hasta el pago.',
+                            b: 'Gasto Honorarios Profesionales $2,500 (D); Cuentas por Pagar $2,500 (H).',
+                            c: 'Gasto Honorarios Profesionales $2,500 (D); Efectivo $2,500 (H).'
+                        },
+                        answer: 'b',
+                        explanation: 'Según el principio de devengo, el gasto se incurrió en enero y debe registrarse en ese mes. Como no se ha pagado, se crea un pasivo (Cuentas por Pagar) para reflejar la obligación.'
+                    }
+                ]
+            },
+            {
+                id: 'mayorizacion',
+                title: 'Mayorización',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 2: Mayorización – La Clasificación y Acumulación de Datos</h2>
+                    <p class="mb-4">La mayorización es el proceso de transferir la información de cada asiento del Diario General a su respectiva cuenta en el Libro Mayor. Mientras el diario es un registro cronológico, el libro mayor organiza las transacciones por cuenta, acumulando los débitos y créditos para determinar el saldo final de cada una.</p>
+                    <p class="mb-4">Este paso transforma la lista de transacciones en un formato estructurado que permite conocer el estado de cualquier cuenta (ej. cuánto efectivo hay, cuánto se debe) en cualquier momento. El resultado de la mayorización es la base para preparar el balance de comprobación.</p>
+                `,
+                examples: [
+                    {
+                        title: 'Caso 1: Mayorización de la Cuenta "Efectivo"',
+                        description: 'Utilizando los asientos de la sección anterior, la cuenta T para Efectivo reflejaría:',
+                        table: {
+                            headers: ['Débitos', 'Créditos'],
+                            rows: [
+                               ['20,000.00 (Aporte)', '3,522.00 (Nómina)'],
+                               ['3,360.00 (Venta)', ''],
+                               ['50,000.00 (Préstamo)', ''],
+                               ['<b>Total Débitos: 73,360.00</b>', '<b>Total Créditos: 3,522.00</b>'],
+                               ['<b>Saldo Deudor: 69,838.00</b>', '']
+                            ],
+                            isTAccount: true
+                        }
+                    },
+                     {
+                        title: 'Caso 2: Mayorización de "Cuentas por Pagar"',
+                        description: 'La cuenta T para Cuentas por Pagar a Proveedores reflejaría:',
+                        table: {
+                            headers: ['Débitos', 'Créditos'],
+                            rows: [
+                               ['', '11,200.00 (Compra)'],
+                               ['<b>Total Débitos: 0.00</b>', '<b>Total Créditos: 11,200.00</b>'],
+                               ['', '<b>Saldo Acreedor: 11,200.00</b>']
+                            ],
+                            isTAccount: true
+                        }
+                    }
+                ],
+                quiz: [
+                    {
+                        question: 'La cuenta de Efectivo inicia con saldo deudor de $5,000. Durante el mes: cobro a clientes $10,000; pago a proveedores $7,000; venta al contado $3,000; compra de suministros al contado $500; pago de salarios $4,000. ¿Cuál es el saldo final?',
+                        choices: {
+                            a: '$6,500 deudor.',
+                            b: '$6,500 acreedor.',
+                            c: '$18,000 deudor.'
+                        },
+                        answer: 'a',
+                        explanation: 'Saldo Inicial $5,000 + Débitos ($10,000 + $3,000) - Créditos ($7,000 + $500 + $4,000) = $5,000 + $13,000 - $11,500 = $6,500 deudor.'
+                    },
+                    {
+                        question: 'Cuenta T para "Cuentas por Pagar": Saldo inicial (acreedor) $3,000. Débitos del período $8,000. Créditos del período $12,000. El saldo final es:',
+                        choices: {
+                            a: '$7,000 deudor.',
+                            b: '$1,000 acreedor.',
+                            c: '$7,000 acreedor.'
+                        },
+                        answer: 'c',
+                        explanation: 'Saldo Inicial Acreedor $3,000 - Débitos $8,000 + Créditos $12,000 = $7,000 acreedor.'
+                    }
+                ]
+            },
+            {
+                id: 'ajustes',
+                title: 'Ajustes Contables',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 3: Ajustes Contables – Refinando la Información Financiera</h2>
+                    <p class="mb-4">Los asientos de ajuste se realizan al final de un período para actualizar las cuentas antes de preparar los estados financieros. Su objetivo es aplicar correctamente los principios de <b>reconocimiento de ingresos</b> (registrar ingresos cuando se ganan) y de <b>asociación</b> (registrar gastos cuando se incurren), independientemente del flujo de efectivo.</p>
+                    <p class="mb-4">Tipos comunes de ajustes incluyen:</p>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><b>Gastos Pagados por Anticipado:</b> Reconocer la porción de un activo (ej. seguro) que se ha consumido.</li>
+                        <li><b>Ingresos Cobrados por Anticipado:</b> Reconocer la porción de un pasivo (ej. anticipo de cliente) que se ha ganado.</li>
+                        <li><b>Gastos Acumulados:</b> Registrar gastos incurridos pero no pagados (ej. sueldos).</li>
+                        <li><b>Ingresos Acumulados:</b> Registrar ingresos ganados pero no cobrados (ej. intereses).</li>
+                        <li><b>Depreciación:</b> Asignar el costo de un activo a lo largo de su vida útil.</li>
+                    </ul>
+                `,
+                examples: [
+                    {
+                        title: 'Caso 1: Ajuste por Depreciación',
+                        description: 'Un vehículo de $25,000 con vida útil de 5 años y valor residual de $5,000. Cálculo del ajuste mensual: (($25,000 - $5,000) / 5 años) / 12 meses = $333.33.',
+                        table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['31/01/202X', 'Gasto por Depreciación', '333.33', ''],
+                                ['', 'Depreciación Acumulada - Vehículo', '', '333.33']
+                            ]
+                        }
+                    },
+                    {
+                        title: 'Caso 2: Ajuste por Sueldos Acumulados',
+                        description: 'La nómina semanal de 5 días es de $5,000 y se paga los viernes. Al 31 de enero (miércoles), los empleados han trabajado 3 días no pagados. Cálculo: ($5,000 / 5 días) * 3 días = $3,000.',
+                        table: {
+                            headers: ['Fecha', 'Descripción / Cuentas', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['31/01/202X', 'Gasto Sueldos', '3,000.00', ''],
+                                ['', 'Sueldos por Pagar', '', '3,000.00']
+                            ]
+                        }
+                    }
+                ],
+                quiz: [
+                    {
+                        question: 'El 1 de octubre, una empresa pagó $3,600 por el alquiler de 6 meses. Al 31 de diciembre, ¿cuál es el saldo de "Alquiler Pagado por Anticipado" después del ajuste?',
+                        choices: {
+                            a: '$1,800.',
+                            b: '$3,600.',
+                            c: '$0.'
+                        },
+                        answer: 'a',
+                        explanation: 'El alquiler mensual es $3,600 / 6 = $600. Han transcurrido 3 meses (Oct-Dic), por lo que el gasto es $1,800. El saldo del activo anticipado es $3,600 - $1,800 = $1,800.'
+                    },
+                    {
+                        question: 'Un equipo costó $120,000, valor residual $10,000, vida útil 10 años. Se compró el 1 de julio. ¿Cuál es el gasto por depreciación para el año fiscal que termina el 31 de diciembre?',
+                        choices: {
+                            a: '$11,000.',
+                            b: '$5,500.',
+                            c: '$12,000.'
+                        },
+                        answer: 'b',
+                        explanation: 'La depreciación anual es ($120,000 - $10,000) / 10 = $11,000. Como se usó por 6 meses (Jul-Dic), la depreciación del período es $11,000 * (6/12) = $5,500.'
+                    }
+                ]
+            },
+            {
+                id: 'balance_comprobacion',
+                title: 'Balance de Comprobación',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 4: Balance de Comprobación</h2>
+                    <p class="mb-4">El balance de comprobación es una lista de todas las cuentas del libro mayor y sus saldos. Su propósito es verificar la igualdad matemática entre débitos y créditos. Se prepara en dos momentos clave:</p>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><b>Balance de Comprobación No Ajustado:</b> Se prepara antes de los ajustes para detectar errores de mayorización.</li>
+                        <li><b>Balance de Comprobación Ajustado:</b> Se prepara después de los ajustes y es la base para crear los estados financieros. Contiene los saldos finales y correctos de todas las cuentas.</li>
+                    </ul>
+                `,
+                examples: [
+                    {
+                        title: 'Ejemplo: Balance de Comprobación Ajustado',
+                        description: 'A continuación se muestra un ejemplo simplificado de un balance de comprobación ajustado.',
+                        table: {
+                            headers: ['Cuenta', 'Debe ($)', 'Haber ($)'],
+                            rows: [
+                                ['Efectivo', '20,000', ''],
+                                ['Suministros', '1,500', ''],
+                                ['Equipo de Oficina', '50,000', ''],
+                                ['Depreciación Acumulada', '', '15,000'],
+                                ['Cuentas por Pagar', '', '8,000'],
+                                ['Capital Social', '', '60,000'],
+                                ['Ingresos por Servicios', '', '33,000'],
+                                ['Gasto Sueldos', '24,000', ''],
+                                ['Gasto Depreciación', '5,000', ''],
+                                ['<b>Total</b>', '<b>100,500</b>', '<b>116,000</b>'],
+                                ['', '<i>(Nota: Este ejemplo está desbalanceado a propósito para ilustrar el formato. En la práctica, los totales deben ser iguales.)</i>', '', '']
+                            ]
+                        }
+                    }
+                ],
+                quiz: [
+                    {
+                        question: 'El balance no ajustado muestra Suministros por $2,000. El conteo físico final es de $700. El balance ajustado mostrará:',
+                        choices: {
+                            a: 'Suministros con saldo deudor de $700 y Gasto Suministros con saldo deudor de $1,300.',
+                            b: 'Suministros con saldo deudor de $1,300 y Gasto Suministros con saldo deudor de $700.',
+                            c: 'Suministros con saldo acreedor de $1,300.'
+                        },
+                        answer: 'a',
+                        explanation: 'Se consumieron $2,000 - $700 = $1,300 en suministros. El ajuste debita Gasto Suministros por $1,300 y acredita Suministros por $1,300. El nuevo saldo de Suministros es $700.'
+                    },
+                    {
+                        question: 'Un balance de comprobación en equilibrio es prueba de que:',
+                        choices: {
+                            a: 'Todos los asientos de diario se registraron correctamente.',
+                            b: 'Todos los asientos se mayorizaron correctamente.',
+                            c: 'El total de débitos en el libro mayor es igual al total de créditos.'
+                        },
+                        answer: 'c',
+                        explanation: 'El equilibrio solo prueba la igualdad matemática. No detecta errores como la omisión de un asiento completo o el registro de un débito en la cuenta incorrecta.'
+                    }
+                ]
+            },
+            {
+                id: 'cierre_libros',
+                title: 'Cierre de Libros',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 5: Proceso de Cierre de Libros</h2>
+                    <p class="mb-4">Los asientos de cierre se realizan al final del período para "reiniciar" las cuentas temporales (ingresos, gastos y dividendos) y transferir la utilidad o pérdida neta a la cuenta de patrimonio (Utilidades Retenidas). Este proceso separa formalmente un período contable del siguiente.</p>
+                    <p class="mb-4">Los pasos son:</p>
+                    <ol class="list-decimal list-inside mb-4 space-y-1">
+                        <li>Cerrar todas las cuentas de ingresos contra la cuenta "Pérdidas y Ganancias".</li>
+                        <li>Cerrar todas las cuentas de gastos contra "Pérdidas y Ganancias".</li>
+                        <li>Cerrar el saldo de "Pérdidas y Ganancias" (la utilidad o pérdida neta) contra "Utilidades Retenidas".</li>
+                        <li>Cerrar la cuenta de Dividendos contra "Utilidades Retenidas".</li>
+                    </ol>
+                `,
+                examples: [],
+                quiz: [
+                    {
+                        question: '¿Cuál de las siguientes cuentas no se cierra al final del período contable?',
+                        choices: {
+                            a: 'Ingresos por Servicios.',
+                            b: 'Gasto por Depreciación.',
+                            c: 'Depreciación Acumulada.'
+                        },
+                        answer: 'c',
+                        explanation: 'Depreciación Acumulada es una cuenta de contra-activo (balance general), por lo tanto, es una cuenta permanente. Su saldo se arrastra al siguiente período.'
+                    },
+                    {
+                        question: 'La cuenta de Utilidades Retenidas tiene un saldo inicial de $80,000. La utilidad neta del período es de $45,000 y se declaran dividendos de $15,000. El saldo final de Utilidades Retenidas será:',
+                        choices: {
+                            a: '$110,000.',
+                            b: '$50,000.',
+                            c: '$125,000.'
+                        },
+                        answer: 'a',
+                        explanation: 'Saldo Final = Saldo Inicial + Utilidad Neta - Dividendos = $80,000 + $45,000 - $15,000 = $110,000.'
+                    }
+                ]
+            },
+            {
+                id: 'estados_financieros',
+                title: 'Estados Financieros',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sección 6: Elaboración y Análisis de Estados Financieros</h2>
+                    <p class="mb-4">La elaboración de los estados financieros es la culminación del ciclo contable. Estos informes comunican la posición y el rendimiento financiero de la empresa. Se preparan a partir de los saldos del balance de comprobación ajustado y están interconectados.</p>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><b>Estado de Resultados:</b> Muestra el rendimiento (ingresos - gastos) durante un período.</li>
+                        <li><b>Balance General:</b> Muestra la posición financiera (activos, pasivos, patrimonio) en una fecha específica.</li>
+                        <li><b>Estado de Flujos de Efectivo:</b> Explica los cambios en el efectivo por actividades de operación, inversión y financiación durante un período.</li>
+                    </ul>
+                `,
+                examples: [],
+                quiz: [
+                    {
+                        question: 'Una empresa tiene Activos Corrientes de $100,000, Activos No Corrientes de $300,000, Pasivos Corrientes de $50,000 y Pasivos No Corrientes de $150,000. ¿Cuál es el monto del Patrimonio?',
+                        choices: {
+                            a: '$200,000.',
+                            b: '$500,000.',
+                            c: '$300,000.'
+                        },
+                        answer: 'a',
+                        explanation: 'Ecuación Contable: Activos = Pasivos + Patrimonio. Total Activos ($400,000) = Total Pasivos ($200,000) + Patrimonio. Por lo tanto, Patrimonio = $400,000 - $200,000 = $200,000.'
+                    },
+                    {
+                        question: 'En el método indirecto del Estado de Flujos de Efectivo, la depreciación se suma a la utilidad neta porque:',
+                        choices: {
+                            a: 'Es una fuente de efectivo.',
+                            b: 'Es un gasto que no implicó una salida de efectivo.',
+                            c: 'Es un ingreso que no implicó una entrada de efectivo.'
+                        },
+                        answer: 'b',
+                        explanation: 'La depreciación es un gasto no monetario. Redujo la utilidad neta sin usar efectivo, por lo que para conciliar la utilidad con el flujo de efectivo, su efecto debe revertirse sumándola de nuevo.'
+                    }
+                ]
+            }
+        ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            const examplesHtml = topic.examples.map(ex => {
+                let tableHtml = '';
+                if (ex.table) {
+                    const headers = ex.table.headers.map(h => `<th scope="col" class="px-4 py-2">${h}</th>`).join('');
+                    const rows = ex.table.rows.map(r => `
+                        <tr class="border-b border-slate-200">
+                            ${r.map(cell => `<td class="px-4 py-2">${cell}</td>`).join('')}
+                        </tr>
+                    `).join('');
+                    
+                    if (ex.table.isTAccount) {
+                         tableHtml = `
+                            <div class="border-b-2 border-slate-800 w-full max-w-md mx-auto relative">
+                                <div class="absolute top-0 left-1/2 h-full w-px bg-slate-800"></div>
+                                <div class="flex">
+                                    <div class="w-1/2 p-2 text-center font-semibold">${ex.table.headers[0]}</div>
+                                    <div class="w-1/2 p-2 text-center font-semibold">${ex.table.headers[1]}</div>
+                                </div>
+                            </div>
+                            <div class="w-full max-w-md mx-auto relative">
+                                <div class="absolute top-0 left-1/2 h-full w-px bg-slate-400"></div>
+                                ${ex.table.rows.map(r => `
+                                    <div class="flex">
+                                        <div class="w-1/2 p-2 text-left">${r[0]}</div>
+                                        <div class="w-1/2 p-2 text-right">${r[1]}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                         `;
+                    } else {
+                        tableHtml = `
+                            <div class="overflow-x-auto mt-2">
+                                <table class="w-full text-sm text-left text-slate-600">
+                                    <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                        <tr>${headers}</tr>
+                                    </thead>
+                                    <tbody>${rows}</tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+                }
+                return `
+                    <div class="mb-6 p-4 bg-slate-50 rounded-lg">
+                        <h4 class="font-semibold text-slate-800">${ex.title}</h4>
+                        <p class="text-sm text-slate-600 mb-2">${ex.description}</p>
+                        ${tableHtml}
+                    </div>
+                `;
+            }).join('');
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Preguntas de Evaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${topic.examples.length > 0 ? `<div class="mt-8"><h3 class="text-xl font-bold text-slate-900 mb-4">Ejemplos Prácticos</h3>${examplesHtml}</div>` : ''}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+
+        const renderQuiz = (topicId, questionIndex) => {
+            const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas de esta sección!</p>`;
+                return;
+            }
+
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente Pregunta</button>
+                </div>
+            `;
+
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                        feedbackEl.classList.remove('hidden');
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                        feedbackEl.classList.remove('hidden');
+                    }
+                    nextBtn.disabled = false;
+                });
+            });
+
+            nextBtn.addEventListener('click', () => {
+                renderQuiz(topicId, questionIndex + 1);
+            });
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+
+        // Initial render
+        renderNav();
+        renderContent();
+    });
+    </script>
+</body>
+</html>

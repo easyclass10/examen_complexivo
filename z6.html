@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Interactivo de NIIF vs. Legislación Ecuatoriana</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 1rem auto;
+            height: 350px;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Análisis NIIF vs. Legislación Ecuatoriana</h1>
+            <p class="text-lg text-slate-600 mt-2">Guía de Contabilidad Superior II (Normativa 2025).</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                </main>
+        </div>
+    </div>
+<script src="todos.js"></script>
+<script>
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'ppe',
+                title: 'PPE (NIC 16)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Propiedades, Planta y Equipo (NIC 16)</h2>
+                    <p class="mb-4">Esta sección explora el tratamiento de los activos fijos, contrastando los modelos de costo y revaluación de las NIIF con los límites de depreciación fiscal en Ecuador.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Principios NIIF</h3>
+                    <p>Permite elegir entre el <strong>Modelo del Costo</strong> (costo - depreciación) o el <strong>Modelo de Revaluación</strong> (valor razonable). La depreciación se basa en la vida útil económica.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Tratamiento Fiscal (LRTI Ecuador)</h3>
+                    <p>La depreciación es deducible, pero el reglamento establece porcentajes anuales máximos (ej. Maquinaria 10%, Vehículos 20%). La depreciación del incremento por revaluación <strong>NO es deducible</strong>.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Conciliación y Divergencias</h3>
+                    <ul class="list-disc pl-5">
+                        <li class="text-red-600"><strong>Diferencia Permanente:</strong> La depreciación del superávit por revaluación.</li>
+                        <li class="text-blue-600"><strong>Diferencia Temporaria:</strong> Surge cuando la vida útil económica (NIIF) difiere de la fiscal (LRTI).</li>
+                    </ul>
+                    <div id="ppe-example-content" class="mt-4"></div>
+                `,
+                examples: [
+                    {
+                        id: 'ppe_ex1',
+                        name: 'Depreciación Lineal vs. Fiscal',
+                        description: 'Una máquina con costo de $188,000, vida útil económica de 8 años y valor residual de $8,000. La tasa fiscal es del 10% anual.',
+                        type: 'bar',
+                        data: { labels: ['Año 1-8'], datasets: [{ label: 'Gasto Contable (NIIF)', data: [22500], backgroundColor: '#4f46e5' }, { label: 'Gasto Deducible (LRTI)', data: [18800], backgroundColor: '#a5b4fc' }] },
+                        analysis: 'La diferencia de $3,700 es una diferencia temporaria que se suma en la conciliación tributaria, creando un pasivo por impuesto diferido.'
+                    },
+                    {
+                        id: 'ppe_ex2',
+                        name: 'Impacto Fiscal de la Revaluación',
+                        description: 'Un edificio con costo de $1M es revaluado, generando un superávit de $500k. Vida útil restante de 28 años. Tasa fiscal del 5% sobre costo histórico.',
+                        type: 'bar',
+                        data: { labels: ['Depreciación Anual'], datasets: [{ label: 'Contable sobre Costo', data: [25000], backgroundColor: '#4f46e5', stack: 'contable' }, { label: 'Contable sobre Superávit (No Deducible)', data: [17857], backgroundColor: '#ef4444', stack: 'contable' }, { label: 'Deducible (LRTI)', data: [50000], backgroundColor: '#a5b4fc' }] },
+                        analysis: 'La porción de $17,857 es una diferencia permanente y no es deducible, aumentando la base imponible.'
+                    }
+                ],
+                quiz: [
+                    { question: "Una empresa ecuatoriana revalúa una maquinaria. La depreciación del superávit por revaluación es de $10,000. ¿Cómo afecta esto a la conciliación tributaria?", choices: { a: "Se resta $10,000 como diferencia temporaria.", b: "No tiene impacto fiscal.", c: "Se suma $10,000 como diferencia permanente."}, answer: 'c', explanation: "La depreciación del superávit por revaluación es un gasto no deducible en Ecuador. Constituye una diferencia permanente."}
+                ]
+            },
+            {
+                id: 'bio',
+                title: 'Activos Biológicos (NIC 41)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Activos Biológicos (NIC 41)</h2>
+                    <p class="mb-4">Aborda el tratamiento de activos vivos. El punto central es el modelo de "valor razonable" de las NIIF, que reconoce ganancias antes de la venta, y cómo la ley fiscal ecuatoriana neutraliza este efecto hasta la enajenación.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Principios NIIF</h3>
+                    <p>Se miden a <strong>valor razonable menos costos de venta</strong>. Los cambios en el valor razonable se reconocen en el resultado del período.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Tratamiento Fiscal (LRTI Ecuador)</h3>
+                    <p>Los ingresos y costos derivados de la medición a valor razonable son considerados <strong>no gravables y no deducibles</strong>. El ingreso se reconoce fiscalmente solo en la venta.</p>
+                     <div id="bio-example-content" class="mt-4"></div>
+                `,
+                examples: [
+                     {
+                        id: 'bio_ex1',
+                        name: 'Crecimiento de Ganado',
+                        description: 'Se compran terneros por $50k, costos de $10k. Al final del año 1, su valor razonable es $85k. Se venden en el año 2 por $100k.',
+                        type: 'line',
+                        data: { labels: ['Inicio A1', 'Fin A1', 'Venta A2'], datasets: [{ label: 'Valor en Libros (NIIF)', data: [50000, 85000, 100000], borderColor: '#4f46e5', tension: 0.1 }, { label: 'Base Fiscal (LRTI)', data: [50000, 60000, 100000], borderColor: '#a5b4fc', tension: 0.1 }] },
+                        analysis: 'El gráfico muestra la divergencia. Al final del año 1, se crea una diferencia temporaria de $25,000 ($85k - $60k), que se revierte en la venta.'
+                    }
+                ],
+                quiz: [
+                     { question: "Una empresa cultiva árboles para madera. ¿Cómo deben medirse bajo NIIF Completas?", choices: { a: "PPE (NIC 16) al costo", b: "Activo Biológico (NIC 41) a valor razonable", c: "Inventario (NIC 2) al menor costo o VNR"}, answer: 'b', explanation: "Los árboles para ser cosechados como producto agrícola (madera) son activos biológicos y la NIC 41 exige su medición a valor razonable." }
+                ]
+            },
+            {
+                id: 'int',
+                title: 'Activos Intangibles (NIC 38)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Activos Intangibles (NIC 38)</h2>
+                    <p class="mb-4">Los intangibles presentan divergencias agudas, especialmente en I+D.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Principios NIIF</h3>
+                    <p><strong>NIIF Completas:</strong> Costos de Investigación son gasto; costos de Desarrollo se capitalizan si cumplen criterios. <strong>NIIF Pymes:</strong> Todos los costos de I+D son gasto.</p>
+                    <h3 class="font-semibold text-lg mt-4 mb-2">Tratamiento Fiscal (LRTI Ecuador)</h3>
+                    <p>Los costos de I+D se tratan como un activo diferido y se amortizan en <strong>cinco años</strong> (20% anual).</p>
+                    <div id="int-example-content" class="mt-4"></div>
+                `,
+                examples: [
+                    {
+                        id: 'int_ex1',
+                        name: 'Costos de Desarrollo (PYMES vs. Fiscal)',
+                        description: 'Una PYME incurre en $500,000 de costos de desarrollo. Contablemente, es un gasto inmediato. Fiscalmente, se amortiza en 5 años.',
+                        type: 'bar',
+                        data: { labels: ['Año 1', 'Año 2-5'], datasets: [{ label: 'Gasto Contable (NIIF PYMES)', data: [500000, 0], backgroundColor: '#4f46e5' }, { label: 'Amortización Deducible (LRTI)', data: [100000, 100000], backgroundColor: '#a5b4fc' }] },
+                        analysis: 'En el Año 1, la empresa tiene un gasto contable de $500k pero solo puede deducir $100k, creando una gran diferencia temporaria.'
+                    }
+                ],
+                quiz: [
+                    { question: "Una empresa que aplica NIIF para PYMES incurre en $80,000 en investigación y $120,000 en desarrollo. ¿Qué importe debe reconocer como gasto?", choices: { a: "$80,000", b: "$120,000", c: "$200,000"}, answer: 'c', explanation: "Bajo NIIF para PYMES, todos los costos de investigación y desarrollo se reconocen como gasto." }
+                ]
+            }
+        ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+        let activeCharts = {};
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+        
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Autoevaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            // Render the first example by default
+            if (topic.examples && topic.examples.length > 0) {
+                renderExample(topic.id, 0);
+            }
+
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+        
+        function renderExample(key, index) {
+            const example = appData.topics.find(t => t.id === key)?.examples[index];
+            const container = document.getElementById(`${key}-example-content`);
+            if (!example || !container) return;
+
+            container.innerHTML = `
+                <div class="card p-6">
+                    <p class="font-semibold text-center mb-2">${example.name}</p>
+                    <p class="text-sm text-gray-600 text-center mb-4">${example.description}</p>
+                    <div class="chart-container">
+                        <canvas id="${example.id}-chart"></canvas>
+                    </div>
+                    <p class="mt-4 text-sm text-center bg-slate-50 p-3 rounded-md">${example.analysis}</p>
+                </div>
+            `;
+
+            if (activeCharts[example.id]) {
+                activeCharts[example.id].destroy();
+            }
+
+            const ctx = document.getElementById(`${example.id}-chart`).getContext('2d');
+            activeCharts[example.id] = new Chart(ctx, {
+                type: example.type,
+                data: example.data,
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        const renderQuiz = (topicId, questionIndex) => {
+            const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas!</p>`;
+                return;
+            }
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente</button>
+                </div>
+            `;
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    }
+                    feedbackEl.classList.remove('hidden');
+                    nextBtn.disabled = false;
+                });
+            });
+            nextBtn.addEventListener('click', () => renderQuiz(topicId, questionIndex + 1));
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+        renderNav();
+        renderContent();
+    });
+</script>
+
+</body>
+</html>

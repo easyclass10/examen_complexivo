@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control Interactivo de Auditoría de Gestión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 1rem auto;
+            height: 250px;
+        }
+        .finding-component {
+            border-left: 3px solid #cbd5e1;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Panel de Control: Auditoría de Gestión</h1>
+            <p class="text-lg text-slate-600 mt-2">Prof. Mg. Andrés Ramos</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                </main>
+        </div>
+    </div>
+<script src="todos.js"></script>
+<script>
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'objetivo',
+                title: 'Objetivo de la Auditoría',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Objetivo de la Auditoría de Gestión</h2>
+                    <p class="mb-4">La auditoría de gestión evalúa si la organización opera de manera óptima. Su objetivo es examinar y mejorar la <strong>Eficacia, Eficiencia y Economía ("las 3 E")</strong> de los procesos.</p>
+                     <div class="grid md:grid-cols-3 gap-4 text-sm">
+                        <div class="p-4 bg-blue-50 rounded-lg"><strong>Eficacia:</strong> Mide el grado en que se alcanzan los objetivos.</div>
+                        <div class="p-4 bg-green-50 rounded-lg"><strong>Eficiencia:</strong> Evalúa la relación entre recursos y resultados.</div>
+                        <div class="p-4 bg-yellow-50 rounded-lg"><strong>Economía:</strong> Se enfoca en adquirir recursos al menor costo posible.</div>
+                    </div>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "Una empresa produce 8,000 widgets usando 1,000 horas-hombre. El objetivo era 9,000 y el estándar es 10 widgets/hora. ¿Cómo se evalúa la gestión?", choices: { a: "Eficaz y eficiente", b: "Ineficaz e ineficiente", c: "Eficaz pero ineficiente"}, answer: 'b', explanation: "Ineficaz porque no alcanzó la meta de 9,000. Ineficiente porque su productividad es de 8 widgets/hora, por debajo del estándar de 10."}
+                ]
+            },
+            {
+                id: 'indicadores',
+                title: 'Indicadores de Gestión (KPIs)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Dashboard de KPIs: "Manufacturas Andinas S.A."</h2>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-center mb-2">Eficacia</h4>
+                            <div class="chart-container h-48"><canvas id="eficaciaChart"></canvas></div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-center mb-2">Eficiencia</h4>
+                            <div class="chart-container h-48"><canvas id="eficienciaChart"></canvas></div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-center mb-2">Economía</h4>
+                            <div class="chart-container h-48"><canvas id="economiaChart"></canvas></div>
+                        </div>
+                    </div>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "Un KPI de 'Costo por Adquisición de Cliente' (CAC) mide principalmente:", choices: { a: "Eficacia", b: "Eficiencia", c: "Economía"}, answer: 'b', explanation: "Mide la eficiencia del proceso de marketing, relacionando recursos invertidos con resultados obtenidos." }
+                ]
+            },
+            {
+                id: 'control-interno',
+                title: 'Control Interno (COSO)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Los 5 Componentes del Marco COSO</h2>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li><strong>Ambiente de Control:</strong> El "tono en la cúpula". Integridad y valores éticos.</li>
+                        <li><strong>Evaluación de Riesgos:</strong> Identificar y analizar los riesgos que amenazan los objetivos.</li>
+                        <li><strong>Actividades de Control:</strong> Políticas y procedimientos para mitigar riesgos.</li>
+                        <li><strong>Información y Comunicación:</strong> Flujo de información relevante y oportuna.</li>
+                        <li><strong>Monitoreo:</strong> Evaluar si el control interno está funcionando.</li>
+                    </ol>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "La política de una empresa que exige que todos los gastos de viaje sean aprobados por un supervisor es un ejemplo de:", choices: { a: "Ambiente de Control", b: "Actividades de Control", c: "Monitoreo"}, answer: 'b', explanation: "Es una acción específica para mitigar el riesgo de gastos no autorizados, lo cual es una actividad de control." }
+                ]
+            },
+             {
+                id: 'hallazgos',
+                title: 'Hallazgos de Auditoría',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Constructor Interactivo de Hallazgos</h2>
+                    <p class="mb-4">Un hallazgo de auditoría debe ser claro y constructivo, siguiendo la estructura de las "4 C". Selecciona un componente para ver su definición.</p>
+                    <div id="finding-constructor" class="space-y-2">
+                        <div data-id="condicion" class="finding-component p-4 rounded-md cursor-pointer hover:bg-slate-50">
+                            <h4 class="font-bold">Condición (Lo que es)</h4>
+                            <p class="text-sm hidden">Describe la situación encontrada. <strong>Ejemplo:</strong> "El 30% de los pagos a proveedores no tuvieron la retención en la fuente aplicada."</p>
+                        </div>
+                        <div data-id="criterio" class="finding-component p-4 rounded-md cursor-pointer hover:bg-slate-50">
+                            <h4 class="font-bold">Criterio (Lo que debe ser)</h4>
+                            <p class="text-sm hidden">La norma o estándar que se incumplió. <strong>Ejemplo:</strong> "El Art. 98 de la LRTI exige que las sociedades actúen como agentes de retención."</p>
+                        </div>
+                        <div data-id="causa" class="finding-component p-4 rounded-md cursor-pointer hover:bg-slate-50">
+                            <h4 class="font-bold">Causa (Por qué ocurrió)</h4>
+                            <p class="text-sm hidden">La razón de la desviación. <strong>Ejemplo:</strong> "El sistema de contabilidad no tiene un campo obligatorio para clasificar a los proveedores."</p>
+                        </div>
+                        <div data-id="efecto" class="finding-component p-4 rounded-md cursor-pointer hover:bg-slate-50">
+                            <h4 class="font-bold">Efecto (La consecuencia)</h4>
+                            <p class="text-sm hidden">El impacto financiero o de riesgo. <strong>Ejemplo:</strong> "Contingencia fiscal por $15,000 más una multa del 100% y la no deducibilidad del gasto."</p>
+                        </div>
+                    </div>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "Un auditor encuentra que el 15% de los productos terminados no pasan el control de calidad final. Esta descripción corresponde a:", choices: { a: "Condición", b: "Criterio", c: "Causa"}, answer: 'a', explanation: "La condición es la descripción fáctica de la situación encontrada ('lo que es')." }
+                ]
+            }
+        ]
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+        
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+            const quizHtml = topic.quiz.length > 0 ? `<div class="mt-8 pt-6 border-t"><h3 class="text-xl font-bold mb-4">Autoevaluación</h3><div id="quiz-container" class="p-4 border rounded-lg"></div></div>` : '';
+            contentContainer.innerHTML = `<div id="${topic.id}" class="content-section active">${topic.explanation}${quizHtml}</div>`;
+            if (topic.id === 'indicadores') initKpiCharts();
+            if (topic.id === 'hallazgos') initFindingConstructor();
+            if (topic.quiz.length > 0) renderQuiz(topic.id, 0);
+        };
+        
+        function initKpiCharts() {
+            const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+            new Chart(document.getElementById('eficaciaChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Cumplido', 'Faltante'], datasets: [{ data: [92, 8], backgroundColor: ['#4f46e5', '#e2e8f0'] }] }, options: commonOptions });
+            new Chart(document.getElementById('eficienciaChart').getContext('2d'), { type: 'bar', data: { labels: ['Estándar', 'Real'], datasets: [{ data: [10, 9.5], backgroundColor: ['#a5b4fc', '#6366f1'] }] }, options: { ...commonOptions, scales: { y: { beginAtZero: true, max: 12 } } } });
+            new Chart(document.getElementById('economiaChart').getContext('2d'), { type: 'line', data: { labels: ['Q1', 'Q2', 'Q3', 'Q4'], datasets: [{ data: [1.02, 1.05, 0.98, 0.99], borderColor: '#4f46e5' }] }, options: { ...commonOptions, scales: { y: { beginAtZero: false } } } });
+        }
+
+        function initFindingConstructor() {
+            const constructor = document.getElementById('finding-constructor');
+            const colors = { condicion: 'border-blue-400', criterio: 'border-red-400', causa: 'border-yellow-400', efecto: 'border-purple-400'};
+            constructor.addEventListener('click', e => {
+                const target = e.target.closest('.finding-component');
+                if (!target) return;
+                constructor.querySelectorAll('.finding-component').forEach(el => {
+                    Object.values(colors).forEach(c => el.classList.remove(c));
+                    el.querySelector('p').classList.add('hidden');
+                });
+                target.classList.add(colors[target.dataset.id]);
+                target.querySelector('p').classList.remove('hidden');
+            });
+        }
+        
+        const renderQuiz = (topicId, questionIndex) => {
+             const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas!</p>`;
+                return;
+            }
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente</button>
+                </div>
+            `;
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    }
+                    feedbackEl.classList.remove('hidden');
+                    nextBtn.disabled = false;
+                });
+            });
+            nextBtn.addEventListener('click', () => renderQuiz(topicId, questionIndex + 1));
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+        renderNav();
+        renderContent();
+    });
+</script>
+
+</body>
+</html>

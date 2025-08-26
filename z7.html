@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Interactivo de Administración Tributaria - Ecuador 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+         .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 1rem auto;
+            height: 350px;
+        }
+        input[type="range"]::-webkit-slider-thumb { background: #4f46e5; }
+        input[type="range"]::-moz-range-thumb { background: #4f46e5; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Guia de Administración Tributaria</h1>
+            <p class="text-lg text-slate-600 mt-2">Guía Interactiva 2025</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                </main>
+        </div>
+    </div>
+<script src="todos.js"></script>
+<script>
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'fundamentos',
+                title: 'Fundamentos Tributarios',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Aspectos Generales en el Ámbito Tributario</h2>
+                    <p class="mb-4">El sistema tributario ecuatoriano se basa en principios constitucionales para garantizar equidad y legalidad. Los pilares son:</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-lg"><strong>Generalidad:</strong> La obligación de tributar aplica a todos, sin privilegios.</div>
+                        <div class="p-4 bg-slate-50 rounded-lg"><strong>Progresividad:</strong> A mayor capacidad económica, mayor es el porcentaje de tu contribución.</div>
+                        <div class="p-4 bg-slate-50 rounded-lg"><strong>Irretroactividad:</strong> Una nueva ley tributaria solo aplica hacia el futuro.</div>
+                        <div class="p-4 bg-slate-50 rounded-lg"><strong>Simplicidad:</strong> Las normas y procesos deben ser claros y fáciles de entender.</div>
+                    </div>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "Una ley publicada en julio de 2025 que aumenta el IR no puede aplicarse a los ingresos del primer semestre de 2025. ¿Qué principio protege al contribuyente?", choices: {a: "Progresividad", b: "Irretroactividad", c: "Eficiencia"}, answer: 'b', explanation: "El principio de Irretroactividad garantiza que una ley tributaria no puede tener efectos retroactivos en perjuicio del contribuyente." },
+                    { question: "El Municipio pavimenta una calle y cobra un valor a los dueños de los predios por el beneficio recibido. Este tributo se clasifica como:", choices: { a: "Impuesto", b: "Tasa", c: "Contribución Especial de Mejora"}, answer: 'c', explanation: "Es una Contribución Especial de Mejora, ya que su hecho generador es el beneficio derivado de una obra pública específica." }
+                ]
+            },
+            {
+                id: 'calculo-ir',
+                title: 'Cálculo de Impuesto a la Renta',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Calculador Interactivo de Impuesto a la Renta</h2>
+                     <p class="mb-4">Ajusta los controles para ver en tiempo real cómo cada variable impacta tu impuesto a la renta. Este ejercicio te permitirá comprender la mecánica de la liquidación de impuestos de una forma práctica y visual.</p>
+                     <div class="grid lg:grid-cols-5 gap-8 items-center">
+                        <div class="lg:col-span-2 bg-slate-50 p-6 rounded-lg space-y-6">
+                            <div>
+                                <label for="ingresos" class="block text-sm font-medium">Ingresos Anuales: <span id="ingresos-val" class="font-bold text-indigo-600">$60,000</span></label>
+                                <input id="ingresos" type="range" min="12081" max="120000" value="60000" class="w-full h-2 bg-slate-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label for="gastos" class="block text-sm font-medium">Gastos Deducibles: <span id="gastos-val" class="font-bold text-indigo-600">$5,670</span></label>
+                                <input id="gastos" type="range" min="0" max="20000" value="5670" class="w-full h-2 bg-slate-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label for="gastos_personales" class="block text-sm font-medium">Gastos Personales: <span id="gastos_personales-val" class="font-bold text-indigo-600">$7,000</span></label>
+                                <input id="gastos_personales" type="range" min="0" max="16000" value="7000" class="w-full h-2 bg-slate-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label for="cargas" class="block text-sm font-medium">Cargas Familiares: <span id="cargas-val" class="font-bold text-indigo-600">2</span></label>
+                                <input id="cargas" type="range" min="0" max="5" value="2" class="w-full h-2 bg-slate-200 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="lg:col-span-3">
+                             <div class="chart-container"><canvas id="taxChart"></canvas></div>
+                             <div id="tax-summary" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-center"></div>
+                        </div>
+                    </div>
+                `,
+                examples: [],
+                quiz: [
+                     { question: "Un contribuyente con 3 cargas familiares y gastos personales de $12,000, ¿qué valor de gastos puede usar para calcular su rebaja? (CFB=$798.31)", choices: { a: "$12,000.00", b: "$11,176.34", c: "$15,966.20"}, answer: 'b', explanation: "El límite para 3 cargas es 14 CFB ($11,176.34). Se usa el menor valor entre los gastos declarados ($12,000) y el límite." }
+                ]
+            },
+            {
+                id: 'formularios',
+                title: 'Formularios y Anexos',
+                explanation: `
+                     <h2 class="text-2xl font-bold mb-4 text-slate-900">Formularios y Anexos del SRI</h2>
+                     <p class="mb-4">Para poder usar la rebaja por gastos personales, es obligatorio presentar el Anexo de Gastos Personales (AGP). Comprender este requisito es crucial para no perder el beneficio fiscal.</p>
+                     <h3 class="font-semibold text-lg mt-4 mb-2">Proceso del Anexo (AGP)</h3>
+                     <ol class="list-decimal list-inside space-y-2 text-sm">
+                        <li><strong>Registro de Cargas Familiares:</strong> Debes registrar a tus dependientes en el SRI en Línea.</li>
+                        <li><strong>Recopilación de Comprobantes:</strong> Guarda todas las facturas de tus gastos personales y de tus cargas.</li>
+                        <li><strong>Llenado y Envío del Anexo:</strong> Ingresa el detalle de cada factura en el AGP en línea y preséntalo según el calendario (en febrero, según tu 9no dígito).</li>
+                    </ol>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "La información pre-llenada sobre tus ingresos y retenciones en el Formulario 102 proviene de:", choices: { a: "Tu declaración del año anterior.", b: "Las declaraciones y anexos de tus empleadores (agentes de retención).", c: "Una estimación del SRI."}, answer: 'b', explanation: "El SRI consolida la información que los agentes de retención reportan mensualmente para pre-llenar tu declaración." }
+                ]
+            }
+        ],
+        taxConstants: {
+            cfb: 798.31,
+            rebatePercentage: 0.18,
+            incomeTaxTable: [
+                { limit: 12081, base: 0, percent: 0 }, { limit: 15387, base: 0, percent: 0.05 }, { limit: 19978, base: 165, percent: 0.10 }, { limit: 26422, base: 624, percent: 0.12 }, { limit: 34770, base: 1398, percent: 0.15 }, { limit: 46089, base: 2650, percent: 0.20 }, { limit: 61359, base: 4914, percent: 0.25 }, { limit: 81817, base: 8731, percent: 0.30 }, { limit: 108810, base: 14869, percent: 0.35 }, { limit: Infinity, base: 24316, percent: 0.37 }
+            ],
+            rebateLimitTable: [
+                { cargas: 0, cfb_multiplier: 7 }, { cargas: 1, cfb_multiplier: 9 }, { cargas: 2, cfb_multiplier: 11 }, { cargas: 3, cfb_multiplier: 14 }, { cargas: 4, cfb_multiplier: 17 }, { cargas: 5, cfb_multiplier: 20 }
+            ]
+        }
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+        let taxChart;
+
+        const renderNav = () => {
+             navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+        
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Autoevaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            if (topic.id === 'calculo-ir') {
+                initTaxCalculator();
+            }
+
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+        
+        function formatCurrency(value) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value); }
+
+        function initTaxCalculator() {
+            const ctx = document.getElementById('taxChart')?.getContext('2d');
+            if(!ctx) return;
+            
+            if (taxChart) taxChart.destroy();
+            taxChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Ingresos', 'Base Imponible', 'Imp. Causado', 'Rebaja', 'Imp. a Pagar'],
+                    datasets: [{ data: [], backgroundColor: ['#a5b4fc', '#818cf8', '#6366f1', '#4f46e5', '#312e81'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
+            });
+
+            ['ingresos', 'gastos', 'gastos_personales', 'cargas'].forEach(id => {
+                document.getElementById(id)?.addEventListener('input', calculateTaxes);
+            });
+            calculateTaxes();
+        }
+
+        function calculateTaxes() {
+            const ingresos = parseFloat(document.getElementById('ingresos')?.value) || 0;
+            const gastos = parseFloat(document.getElementById('gastos')?.value) || 0;
+            const gastos_personales = parseFloat(document.getElementById('gastos_personales')?.value) || 0;
+            const cargas = parseInt(document.getElementById('cargas')?.value) || 0;
+            
+            document.getElementById('ingresos-val').textContent = formatCurrency(ingresos);
+            document.getElementById('gastos-val').textContent = formatCurrency(gastos);
+            document.getElementById('gastos_personales-val').textContent = formatCurrency(gastos_personales);
+            document.getElementById('cargas-val').textContent = cargas;
+
+            const baseImponible = Math.max(0, ingresos - gastos);
+            let impuestoCausado = 0;
+            let previousLimit = 0;
+            for (const tier of studyGuideData.taxConstants.incomeTaxTable) {
+                if (baseImponible > previousLimit) {
+                    if (baseImponible <= tier.limit) {
+                        impuestoCausado = tier.base + (baseImponible - previousLimit) * tier.percent;
+                        break;
+                    }
+                }
+                previousLimit = tier.limit;
+            }
+
+            const rebateInfo = studyGuideData.taxConstants.rebateLimitTable.find(r => r.cargas === cargas);
+            const limiteGastos = rebateInfo.cfb_multiplier * studyGuideData.taxConstants.cfb;
+            const valorParaRebaja = Math.min(gastos_personales, limiteGastos);
+            const rebaja = valorParaRebaja * studyGuideData.taxConstants.rebatePercentage;
+            const impuestoAPagar = Math.max(0, impuestoCausado - rebaja);
+
+            taxChart.data.datasets[0].data = [ingresos, baseImponible, impuestoCausado, rebaja, impuestoAPagar];
+            taxChart.update();
+            
+            document.getElementById('tax-summary').innerHTML = `
+                <div class="p-2 bg-slate-50 rounded-md"><p class="text-xs">Base Imponible</p><p class="font-bold">${formatCurrency(baseImponible)}</p></div>
+                <div class="p-2 bg-slate-50 rounded-md"><p class="text-xs">Impuesto Causado</p><p class="font-bold">${formatCurrency(impuestoCausado)}</p></div>
+                <div class="p-2 bg-slate-50 rounded-md"><p class="text-xs">Rebaja Aplicada</p><p class="font-bold">${formatCurrency(rebaja)}</p></div>
+                <div class="p-2 bg-indigo-100 rounded-md"><p class="text-xs">Impuesto a Pagar</p><p class="font-bold">${formatCurrency(impuestoAPagar)}</p></div>
+            `;
+        }
+        
+        const renderQuiz = (topicId, questionIndex) => {
+            const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas!</p>`;
+                return;
+            }
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente</button>
+                </div>
+            `;
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    }
+                    feedbackEl.classList.remove('hidden');
+                    nextBtn.disabled = false;
+                });
+            });
+            nextBtn.addEventListener('click', () => renderQuiz(topicId, questionIndex + 1));
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+        renderNav();
+        renderContent();
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva: Contabilidad de Costos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Paleta de colores y estilos tomados del ejemplo de Contabilidad General -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+        <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Guía de Preparación: Contabilidad de Costos y Avanzados</h1>
+            <p class="text-lg text-slate-600 mt-2">Desarrollado por <strong>easyclass</strong></p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                <!-- El contenido del tema se generará aquí -->
+            </main>
+        </div>
+    </div>
+
+    <script src="todos.js"></script>
+    <script>
+    // El objeto de datos ha sido reestructurado para coincidir con el formato del ejemplo.
+    // Se eliminó la anidación "content" y se convirtieron los ejemplos en un array de objetos.
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'clasificacion',
+                title: '1. Clasificación de Costos',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Clasificación de los Costos</h2>
+                    <p class="mb-4">El costo es el valor monetario de los recursos sacrificados para alcanzar un objetivo específico. La clasificación de los costos no es única; depende del propósito para el cual se utilizará la información. Las clasificaciones más importantes son:</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">1. Según su Función (Reporte Externo)</h3>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><b>Costos del Producto (Inventariables):</b> Se asocian con la producción y se capitalizan en los inventarios hasta la venta. Incluyen:
+                            <ul class="list-['-_'] list-inside ml-6">
+                                <li><b>Materia Prima Directa (MPD):</b> Materiales principales, fácilmente rastreables al producto.</li>
+                                <li><b>Mano de Obra Directa (MOD):</b> Trabajo humano directamente involucrado en la transformación.</li>
+                                <li><b>Costos Indirectos de Fabricación (CIF):</b> Costos de producción que no son MPD ni MOD (ej. depreciación de fábrica, supervisión).</li>
+                            </ul>
+                        </li>
+                        <li><b>Costos del Período (No Inventariables):</b> Se registran como gasto en el período en que se incurren. Incluyen gastos de administración y de venta.</li>
+                    </ul>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">2. Según su Comportamiento (Planificación y Control)</h3>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><b>Costos Variables:</b> El total cambia en proporción directa al volumen de actividad, pero el costo unitario es constante.</li>
+                        <li><b>Costos Fijos:</b> El total permanece constante dentro de un rango relevante, pero el costo unitario disminuye al aumentar la actividad.</li>
+                        <li><b>Costos Mixtos:</b> Tienen un componente fijo y uno variable.</li>
+                    </ul>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">3. Según su Relevancia para la Toma de Decisiones</h3>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><b>Costos Relevantes:</b> Costos futuros que difieren entre alternativas.</li>
+                        <li><b>Costos Irrelevantes:</b> Costos que no cambian sin importar la decisión (ej. costos sumergidos).</li>
+                        <li><b>Costo de Oportunidad:</b> Beneficio sacrificado al elegir una opción sobre otra.</li>
+                    </ul>
+                `,
+                examples: [
+                    { title: '1. Decisión de Fabricar o Comprar', description: 'Una empresa fabrica un componente con un costo variable de $15 y costos fijos asignados de $5. Un proveedor ofrece venderlo a $18. Si los costos fijos son inevitables (irrelevantes), la empresa debe seguir fabricando, ya que su costo relevante ($15) es menor que el de compra ($18).' },
+                    { title: '2. Pedido Especial', description: 'Una fábrica con capacidad ociosa vende un producto a $50 (costo variable $30, costo fijo $10). Recibe una oferta por un pedido especial a $35. Debe aceptar, ya que el precio ($35) cubre el costo variable ($30) y contribuye con $5 a los costos fijos y la utilidad.' },
+                    { title: '3. Identificación de Costos', description: 'En una fábrica de automóviles, el acero es MPD (variable, producto), el salario del ensamblador es MOD (variable, producto), el salario del supervisor de planta es CIF (fijo, producto), y la comisión del vendedor es un Gasto de Venta (variable, período).' },
+                    { title: '4. Costo Mixto', description: 'La factura de electricidad de la fábrica es de $5,000 + $0.10 por kWh. Los $5,000 son el componente fijo y los $0.10/kWh son el componente variable.' },
+                    { title: '5. Costo de Oportunidad', description: 'Una empresa tiene un espacio de bodega que no utiliza. Podría alquilarlo por $2,000 al mes. Si decide usarlo para un nuevo proyecto, el costo de oportunidad de esa decisión es de $2,000 mensuales.' }
+                ],
+                quiz: [
+                    { question: 'Una empresa incurrió en: MPD $100,000; MOD $80,000; CIF Variables $30,000; CIF Fijos $50,000; Gastos de Venta Variables $20,000; Gastos de Admón. Fijos $40,000. ¿Cuál es el costo total del producto?', choices: { a: '$260,000', b: '$280,000', c: '$320,000' }, answer: 'a', explanation: 'El costo del producto incluye todos los costos de producción: MPD + MOD + CIF (Variables y Fijos). $100,000 + $80,000 + $30,000 + $50,000 = $260,000.' },
+                    { question: 'La empresa "Delta" tiene costos fijos de $100,000. A un nivel de producción de 10,000 unidades, el costo total es de $300,000. Si la producción aumenta a 15,000 unidades, ¿cuál será el costo total esperado?', choices: { a: '$400,000', b: '$450,000', c: '$350,000' }, answer: 'a', explanation: 'Primero, se calcula el costo variable unitario: ($300,000 - $100,000) / 10,000 u = $20/u. Luego, el costo total para 15,000 u = $100,000 (Fijos) + (15,000 u * $20/u) = $100,000 + $300,000 = $400,000.' },
+                    { question: 'Una máquina tiene un valor en libros de $20,000 (costo original $50,000). Se puede vender hoy por $8,000. Una máquina nueva cuesta $60,000 y ahorrará $15,000 anuales en costos operativos. Al decidir si reemplazarla, ¿cuál es el costo sumergido?', choices: { a: '$8,000', b: '$20,000', c: '$50,000' }, answer: 'b', explanation: 'El costo sumergido es un costo pasado que no puede cambiarse. El valor en libros de $20,000 es el resultado de decisiones pasadas y es irrelevante para la decisión futura. El costo original de $50,000 también es un costo histórico.' },
+                    { question: 'Una empresa produce 1,000 unidades. Los costos variables son de $10/u y los costos fijos son de $5,000. Si la producción se duplica a 2,000 unidades, ¿cuál será el costo total por unidad?', choices: { a: '$15.00', b: '$12.50', c: '$10.00' }, answer: 'b', explanation: 'A 2,000 unidades, el costo variable total es 2,000 * $10 = $20,000. El costo fijo total sigue siendo $5,000. El costo total es $25,000. El costo unitario es $25,000 / 2,000 u = $12.50.' },
+                    { question: '¿Cuál de los siguientes es un costo primo y un costo de conversión a la vez?', choices: { a: 'Materia Prima Directa', b: 'Mano de Obra Directa', c: 'Costos Indirectos de Fabricación' }, answer: 'b', explanation: 'Costo Primo = MPD + MOD. Costo de Conversión = MOD + CIF. La Mano de Obra Directa es el único elemento común a ambas clasificaciones.' },
+                    { question: 'La empresa "Omega" puede usar su capacidad ociosa para producir 1,000 unidades de un producto para un pedido especial. Los costos unitarios son: MPD $12, MOD $8, CIF Variable $5, CIF Fijo $10. ¿Cuál es el precio mínimo que debería aceptar por el pedido especial?', choices: { a: '$35', b: 'Mayor a $35', c: 'Mayor a $25' }, answer: 'c', explanation: 'Para un pedido especial con capacidad ociosa, el precio mínimo debe cubrir todos los costos incrementales (variables). Costo Variable = MPD + MOD + CIF Variable = $12 + $8 + $5 = $25. Cualquier precio superior a $25 contribuirá a cubrir los costos fijos.' },
+                    { question: 'El costo del alquiler de la fábrica se clasifica como:', choices: { a: 'Costo fijo y costo del producto.', b: 'Costo variable y costo del período.', c: 'Costo fijo y costo del período.' }, answer: 'a', explanation: 'El alquiler es un costo que no varía con la producción (fijo) y está directamente relacionado con la función de fabricación (costo del producto, como parte de los CIF).' },
+                    { question: 'Una empresa tiene la opción de vender un producto semi-terminado por $50 o procesarlo más a un costo adicional de $20 para venderlo a $65. ¿Qué debe hacer la empresa?', choices: { a: 'Venderlo semi-terminado.', b: 'Procesarlo más.', c: 'Es indiferente.' }, answer: 'a', explanation: 'Se debe comparar el ingreso incremental con el costo incremental. Ingreso incremental = $65 - $50 = $15. Costo incremental = $20. Como el costo adicional ($20) es mayor que el ingreso adicional ($15), la empresa perdería $5 por unidad al procesarlo más.' },
+                    { question: 'Se incurren los siguientes costos: Depreciación de máquinas de fábrica $10,000; Salario del gerente de ventas $15,000; Seguro de la fábrica $3,000; Publicidad $7,000. ¿Cuál es el total de Costos Indirectos de Fabricación?', choices: { a: '$13,000', b: '$22,000', c: '$35,000' }, answer: 'a', explanation: 'Los CIF son los costos de producción que no son MPD ni MOD. De la lista, son la depreciación de máquinas ($10,000) y el seguro de la fábrica ($3,000). Total CIF = $13,000.' },
+                    { question: 'El costo de la electricidad de una empresa se calcula como $1,000 fijos más $2 por hora-máquina. Si se trabajaron 3,000 horas-máquina, ¿cómo se clasifica el costo total de $7,000?', choices: { a: 'Costo variable', b: 'Costo fijo', c: 'Costo mixto' }, answer: 'c', explanation: 'El costo tiene tanto un componente fijo ($1,000) como uno variable ($2/hora), lo que lo define como un costo mixto.' }
+                ]
+            },
+            {
+                id: 'estados_financieros',
+                title: '2. Estados Financieros Industriales',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Estados Financieros de Empresas Industriales</h2>
+                    <p class="mb-4">Las empresas industriales tienen una complejidad adicional debido a sus tres inventarios (Materia Prima, Productos en Proceso, Productos Terminados). Esto requiere un estado de soporte clave:</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Estado de Costo de Producción y Ventas (ECPV)</h3>
+                    <p class="mb-4">Este estado detalla cómo se calcula el Costo de Ventas. Su estructura sigue el flujo de costos de producción:</p>
+                    <ol class="list-decimal list-inside space-y-2 mb-4">
+                        <li><b>Costo de Materia Prima Utilizada:</b> Inv. Inicial MP + Compras Netas MP - Inv. Final MP.</li>
+                        <li><b>Costo de Producción Total:</b> MPD Utilizada + MOD + CIF.</li>
+                        <li><b>Costo de Artículos Producidos:</b> Costo de Producción Total + Inv. Inicial P. en Proceso - Inv. Final P. en Proceso.</li>
+                        <li><b>Costo de Ventas:</b> Costo de Artículos Producidos + Inv. Inicial P. Terminados - Inv. Final P. Terminados.</li>
+                    </ol>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Estado de Resultados</h3>
+                    <p class="mb-4">La cifra final del ECPV (Costo de Ventas) se traslada al Estado de Resultados para calcular la Utilidad Bruta (Ventas Netas - Costo de Ventas). El resto del estado sigue la estructura estándar, restando los gastos de operación (administración y ventas) para llegar a la utilidad operativa.</p>
+                `,
+                examples: [
+                    { title: '1. Cálculo de MPD Utilizada', description: 'Inv. Inicial MP $10k, Compras $50k, Inv. Final MP $8k. MPD Utilizada = $10k + $50k - $8k = $52k.' },
+                    { title: '2. Cálculo de Costo de Producción', description: 'MPD Utilizada $52k, MOD $40k, CIF $30k. Costo de Producción = $52k + $40k + $30k = $122k.' },
+                    { title: '3. Cálculo de Artículos Producidos', description: 'Costo de Producción $122k, Inv. Inicial PP $15k, Inv. Final PP $20k. Costo Art. Producidos = $122k + $15k - $20k = $117k.' },
+                    { title: '4. Cálculo de Costo de Ventas', description: 'Costo Art. Producidos $117k, Inv. Inicial PT $30k, Inv. Final PT $25k. Costo de Ventas = $117k + $30k - $25k = $122k.' },
+                    { title: '5. Cálculo de Utilidad Bruta', description: 'Ventas Netas $200k, Costo de Ventas $122k. Utilidad Bruta = $200k - $122k = $78k.' }
+                ],
+                quiz: [
+                    { question: 'Costo primo $150,000; Costo de conversión $130,000; MPD utilizada $90,000. ¿Cuál es el costo de producción total?', choices: { a: '$280,000', b: '$220,000', c: '$190,000' }, answer: 'b', explanation: 'Costo Primo = MPD + MOD => $150k = $90k + MOD => MOD = $60k. Costo de Conversión = MOD + CIF => $130k = $60k + CIF => CIF = $70k. Costo de Producción = MPD + MOD + CIF = $90k + $60k + $70k = $220,000.' },
+                    { question: 'Costo de artículos producidos $250,000; Inv. Inicial PT $50,000; Costo de ventas $260,000. ¿Cuál es el inventario final de productos terminados?', choices: { a: '$40,000', b: '$60,000', c: '$10,000' }, answer: 'a', explanation: 'Costo de Art. Disp. para Venta = Costo Art. Prod. + Inv. Inicial PT = $250k + $50k = $300k. Inv. Final PT = Costo Disp. Venta - Costo de Ventas = $300k - $260k = $40,000.' },
+                    { question: 'Ventas $800k; Utilidad Bruta 40% de las ventas; Gastos de operación 25% de las ventas. ¿Cuál es la utilidad operativa?', choices: { a: '$120,000', b: '$200,000', c: '$320,000' }, answer: 'a', explanation: 'Utilidad Bruta = $800k * 40% = $320k. Gastos de Operación = $800k * 25% = $200k. Utilidad Operativa = Utilidad Bruta - Gastos de Operación = $320k - $200k = $120,000.' },
+                    { question: 'Costo de Producción Total $500k; Inv. Final PP es 80% del Inv. Inicial PP. El Costo de Artículos Producidos fue de $504k. ¿Cuál era el valor del Inventario Inicial de Productos en Proceso?', choices: { a: '$20,000', b: '$16,000', c: '$25,000' }, answer: 'a', explanation: 'Costo Art. Prod = Costo Prod. Total + IIPP - IFPP. $504k = $500k + IIPP - (0.8 * IIPP). $4k = 0.2 * IIPP. IIPP = $4k / 0.2 = $20,000.' },
+                    { question: 'El costo de la MPD utilizada fue de $120,000. El inventario de MP aumentó en $15,000 durante el período. ¿Cuál fue el monto de las compras de materia prima?', choices: { a: '$105,000', b: '$135,000', c: '$120,000' }, answer: 'b', explanation: 'MPD Utilizada = IIMP + Compras - IFMP. $120k = IIMP + Compras - (IIMP + $15k). $120k = Compras - $15k. Compras = $135,000.' }
+                ]
+            },
+            {
+                id: 'ordenes_trabajo',
+                title: '3. Costos por Órdenes de Trabajo',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sistema de Costos por Órdenes de Trabajo</h2>
+                    <p class="mb-4">Este sistema se usa cuando se producen productos o servicios únicos o en lotes pequeños y distintos. El costo se acumula para cada "orden de trabajo" individual.</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Hoja de Costos por Orden de Trabajo</h3>
+                    <p class="mb-4">Es el documento central que resume los costos de MPD, MOD y CIF aplicados a una orden específica. La suma de todas las hojas de costos de órdenes en proceso debe igualar el saldo de la cuenta de Inventario de Productos en Proceso.</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Aplicación de CIF</h3>
+                    <p class="mb-4">Dado que los CIF reales no se conocen de inmediato, se aplican a las órdenes usando una <b>tasa predeterminada</b>, calculada al inicio del período:</p>
+                    <p class="mb-4 bg-slate-100 p-2 rounded">Tasa Predeterminada CIF = (CIF Totales Presupuestados) / (Base de Aplicación Total Presupuestada)</p>
+                    <p class="mb-4">Al final del período, se compara el CIF Real con el CIF Aplicado. La diferencia es una <b>sobreaplicación</b> (Aplicado > Real) o <b>subaplicación</b> (Aplicado < Real), que generalmente se cierra contra el Costo de Ventas.</p>
+                `,
+                examples: [
+                    { title: '1. Cálculo de Tasa CIF', description: 'CIF Presupuestados $200k, Horas MOD Presupuestadas 10,000. Tasa = $200k / 10,000h = $20 por hora MOD.' },
+                    { title: '2. Costeo de una Orden', description: 'La Orden #101 usó $500 de MPD y 20 horas MOD. El CIF aplicado es 20h * $20/h = $400. Si la MOD costó $300, el costo total es $500 + $300 + $400 = $1,200.' },
+                    { title: '3. Registro de MP Indirecta', description: 'Se usan $50 de pegamento en la fábrica. El asiento es: Débito a Control CIF $50, Crédito a Inventario de Materias Primas $50.' },
+                    { title: '4. Cálculo de Subaplicación', description: 'CIF Reales $210k, CIF Aplicados (10,200h * $20/h) $204k. Hay una subaplicación de $6k ($210k - $204k).' },
+                    { title: '5. Asiento de Cierre de Variación', description: 'Para cerrar la subaplicación de $6k, el asiento es: Débito a Costo de Ventas $6k, Crédito a Control CIF (o cuenta de variación) $6k.' }
+                ],
+                quiz: [
+                    { question: 'Tasa CIF predeterminada $15/hora-máquina. Orden #55 usó $1,000 MPD, $800 MOD y 50 horas-máquina. ¿Costo total de la orden?', choices: { a: '$2,550', b: '$1,800', c: '$2,575' }, answer: 'a', explanation: 'CIF Aplicado = 50h * $15/h = $750. Costo Total = $1,000 (MPD) + $800 (MOD) + $750 (CIF) = $2,550.' },
+                    { question: 'CIF Aplicados $150k, CIF Reales $160k. La variación es una:', choices: { a: 'Sobreaplicación de $10k', b: 'Subaplicación de $10k', c: 'Subaplicación de $160k' }, answer: 'b', explanation: 'Cuando los CIF Reales > CIF Aplicados, los costos están subaplicados. La diferencia es $160k - $150k = $10k.' },
+                    { question: 'Una empresa aplica CIF al 80% del costo de la MOD. La Orden #23 tiene un costo total de $5,000, y usó $1,000 de MPD. ¿Cuál fue el costo de la MOD?', choices: { a: '$2,222', b: '$4,000', c: '$2,500' }, answer: 'a', explanation: 'Costo Total = MPD + MOD + CIF. $5,000 = $1,000 + MOD + (0.8 * MOD). $4,000 = 1.8 * MOD. MOD = $4,000 / 1.8 = $2,222.22.' }
+                ]
+            },
+            {
+                id: 'procesos',
+                title: '4. Costos por Procesos',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Sistema de Costos por Procesos</h2>
+                    <p class="mb-4">Se utiliza para la producción masiva y continua de productos homogéneos (ej. bebidas, químicos). Los costos se acumulan por departamento o proceso y se promedian entre todas las unidades producidas.</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Producción Equivalente</h3>
+                    <p class="mb-4">Es el concepto clave. Expresa las unidades parcialmente completas en términos de unidades totalmente completas. Se calcula por separado para cada elemento del costo (MP y Conversión).</p>
+                    <p class="mb-4 bg-slate-100 p-2 rounded">Prod. Equivalente = (Unidades Terminadas) + (Unidades en Proc. Final * % Avance)</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Informe de Costo de Producción</h3>
+                    <p class="mb-4">Es el documento central que resume la actividad de un departamento en 5 pasos (Método Promedio Ponderado):</p>
+                    <ol class="list-decimal list-inside space-y-2 mb-4">
+                        <li><b>Flujo Físico de Unidades:</b> Conciliar unidades de entrada y salida.</li>
+                        <li><b>Cálculo de Producción Equivalente:</b> Para MP y Conversión.</li>
+                        <li><b>Cálculo de Costos a Contabilizar:</b> Costos del Inv. Inicial + Costos del Período.</li>
+                        <li><b>Cálculo de Costo por Unidad Equivalente:</b> Costos Totales / Unidades Equivalentes.</li>
+                        <li><b>Asignación de Costos:</b> A unidades terminadas y al inventario final en proceso.</li>
+                    </ol>
+                `,
+                examples: [
+                    { title: '1. Cálculo de Unidades Equivalentes', description: 'Se terminaron 800 u. Quedaron 200 u en proceso (100% MP, 50% Conv). Eq. MP = 800 + (200*100%) = 1,000. Eq. Conv = 800 + (200*50%) = 900.' },
+                    { title: '2. Cálculo de Costo Unitario Equivalente', description: 'Costos totales de MP $2,000. CUE_MP = $2,000 / 1,000 = $2.00.' },
+                    { title: '3. Asignación a Unidades Terminadas', description: 'Si CUE_MP=$2 y CUE_Conv=$3, el costo unitario total es $5. El costo de las 800 u terminadas es 800 * $5 = $4,000.' },
+                    { title: '4. Asignación a Inventario Final', description: 'El costo del inventario final es (200 Eq.MP * $2) + (100 Eq.Conv * $3) = $400 + $300 = $700.' },
+                    { title: '5. Costos Transferidos', description: 'El Dpto. 1 transfiere 1,000 u al Dpto. 2 con un costo de $5,000. Para el Dpto. 2, estos $5,000 son un nuevo costo, "Costos Transferidos", tratados como MP agregada al inicio.' }
+                ],
+                quiz: [
+                    { question: 'Se terminaron 5,000 u. El inv. final en proceso es de 1,000 u (100% MP, 60% Conv). La producción equivalente para conversión es:', choices: { a: '6,000', b: '5,600', c: '5,000' }, answer: 'b', explanation: 'Prod. Eq. Conv = (5,000 * 100%) + (1,000 * 60%) = 5,000 + 600 = 5,600.' },
+                    { question: 'Costos a contabilizar de MP $40,000. Prod. Eq. de MP 20,000 u. Costo por unidad equivalente de MP es:', choices: { a: '$2.00', b: '$0.50', c: '$4.00' }, answer: 'a', explanation: 'CUE_MP = Costos Totales MP / Prod. Eq. MP = $40,000 / 20,000 = $2.00.' },
+                    { question: 'Inv. final en proceso 500 u (100% MP, 40% Conv). CUE_MP $3, CUE_Conv $5. ¿Costo del inventario final?', choices: { a: '$4,000', b: '$2,500', c: '$1,500' }, answer: 'b', explanation: 'Costo MP = (500 * 100%) * $3 = $1,500. Costo Conv = (500 * 40%) * $5 = 200 * $5 = $1,000. Total = $1,500 + $1,000 = $2,500.' }
+                ]
+            },
+            {
+                id: 'costo_estandar',
+                title: '5. Costo Estándar',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Costo Estándar de Producción</h2>
+                    <p class="mb-4">Un costo estándar es un costo predeterminado que indica lo que <b>debería costar</b> producir una unidad en condiciones eficientes. Sirve como un benchmark para el control de costos mediante el análisis de <b>variaciones</b> (diferencias entre el costo real y el estándar).</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Análisis de Variaciones (Costos Directos)</h3>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><b>Variación en Precio de MP (Vp):</b> (Precio Real - Precio Estándar) x Cantidad Real Comprada. Mide la eficiencia en las compras.</li>
+                        <li><b>Variación en Cantidad de MP (Vc):</b> (Cantidad Real Usada - Cantidad Estándar Permitida) x Precio Estándar. Mide la eficiencia en el uso de materiales.</li>
+                        <li><b>Variación en Tarifa de MOD (Vt):</b> (Tarifa Real - Tarifa Estándar) x Horas Reales Trabajadas. Mide el costo de la mano de obra.</li>
+                        <li><b>Variación en Eficiencia de MOD (Ve):</b> (Horas Reales - Horas Estándar Permitidas) x Tarifa Estándar. Mide la productividad de la mano de obra.</li>
+                    </ul>
+                `,
+                examples: [
+                    { title: '1. Estándar de MPD', description: '2 kg/u a $5/kg. Costo estándar de MPD por unidad = $10.' },
+                    { title: '2. Estándar de MOD', description: '0.5 horas/u a $20/hora. Costo estándar de MOD por unidad = $10.' },
+                    { title: '3. Variación de Precio MPD', description: 'Se compraron 1,000 kg a $5.20/kg. Vp = ($5.20 - $5.00) * 1,000 kg = $200 Desfavorable.' },
+                    { title: '4. Variación de Cantidad MPD', description: 'Se usaron 450 kg para producir 200 u. Cantidad estándar permitida = 200 u * 2 kg/u = 400 kg. Vc = (450 kg - 400 kg) * $5/kg = $250 Desfavorable.' },
+                    { title: '5. Variación de Eficiencia MOD', description: 'Se usaron 110 horas para producir 200 u. Horas estándar permitidas = 200 u * 0.5 h/u = 100 h. Ve = (110 h - 100 h) * $20/h = $200 Desfavorable.' }
+                ],
+                quiz: [
+                    { question: 'Estándar: 3 kg MPD/u a $4/kg. Se usaron 3,200 kg para producir 1,000 u. ¿Variación en cantidad de MPD?', choices: { a: '$800 Favorable', b: '$800 Desfavorable', c: '$400 Desfavorable' }, answer: 'b', explanation: 'Cantidad Estándar Permitida = 1,000 u * 3 kg/u = 3,000 kg. Vc = (3,200 kg - 3,000 kg) * $4/kg = 200 kg * $4/kg = $800 Desfavorable.' },
+                    { question: 'Estándar: 2 horas MOD/u a $18/hora. Se trabajaron 4,100 horas a una tarifa real de $19/hora para producir 2,000 u. ¿Variación en tarifa de MOD?', choices: { a: '$4,100 Desfavorable', b: '$4,100 Favorable', c: '$1,800 Desfavorable' }, answer: 'a', explanation: 'Vt = (Tarifa Real - Tarifa Estándar) * Horas Reales = ($19 - $18) * 4,100 h = $1 * 4,100 h = $4,100 Desfavorable.' },
+                    { question: 'Usando los datos de la pregunta anterior, ¿cuál es la variación en eficiencia de MOD?', choices: { a: '$1,800 Favorable', b: '$1,900 Desfavorable', c: '$1,800 Desfavorable' }, answer: 'c', explanation: 'Horas Estándar Permitidas = 2,000 u * 2 h/u = 4,000 h. Ve = (Horas Reales - Horas Estándar) * Tarifa Estándar = (4,100 h - 4,000 h) * $18/h = 100 h * $18/h = $1,800 Desfavorable.' }
+                ]
+            },
+            {
+                id: 'cvu',
+                title: '6. Relación Costo-Volumen-Utilidad',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Análisis Costo-Volumen-Utilidad (C-V-U)</h2>
+                    <p class="mb-4">El análisis C-V-U estudia la interrelación entre precios, volumen, costos y utilidad. Es una herramienta vital para la planificación y toma de decisiones.</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Margen de Contribución (MC)</h3>
+                    <p class="mb-4">Es la cantidad que queda de las ventas para cubrir los costos fijos y generar utilidad. MC = Ventas - Costos Variables.</p>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Punto de Equilibrio (PE)</h3>
+                    <p class="mb-4">Es el nivel de ventas donde la utilidad es cero (Ingresos Totales = Costos Totales).</p>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><b>PE en Unidades:</b> Costos Fijos Totales / Margen de Contribución Unitario</li>
+                        <li><b>PE en Valor ($):</b> Costos Fijos Totales / Razón de Margen de Contribución</li>
+                    </ul>
+                    <p class="mb-4">La Razón de MC = MC Unitario / Precio de Venta Unitario.</p>
+                `,
+                examples: [
+                    { title: '1. Cálculo de MC Unitario', description: 'Precio $50, Costo Variable $30. MC Unitario = $50 - $30 = $20.' },
+                    { title: '2. PE en Unidades', description: 'Costos Fijos $10,000. PE = $10,000 / $20 = 500 unidades.' },
+                    { title: '3. Razón de MC', description: 'Razón = $20 / $50 = 40%.' },
+                    { title: '4. PE en Valor', description: 'PE = $10,000 / 0.40 = $25,000.' },
+                    { title: '5. Ventas para Utilidad Deseada', description: 'Para ganar $5,000, se deben vender ($10,000 + $5,000) / $20 = 750 unidades.' }
+                ],
+                quiz: [
+                    { question: 'Precio $80, Costo Variable $50, Costos Fijos $120,000. ¿Punto de equilibrio en unidades?', choices: { a: '1,500', b: '2,400', c: '4,000' }, answer: 'c', explanation: 'MC Unitario = $80 - $50 = $30. PE = $120,000 / $30 = 4,000 unidades.' },
+                    { question: 'Razón de MC 25%, Costos Fijos $50,000. ¿Punto de equilibrio en valor?', choices: { a: '$12,500', b: '$200,000', c: '$250,000' }, answer: 'b', explanation: 'PE en Valor = Costos Fijos / Razón de MC = $50,000 / 0.25 = $200,000.' },
+                    { question: 'Precio $100, Costo Variable $70, Costos Fijos $60,000. ¿Cuántas unidades se deben vender para obtener una utilidad de $30,000?', choices: { a: '2,000', b: '3,000', c: '1,000' }, answer: 'b', explanation: 'MC Unitario = $100 - $70 = $30. Unidades = (Costos Fijos + Utilidad Deseada) / MC Unitario = ($60,000 + $30,000) / $30 = $90,000 / $30 = 3,000.' }
+                ]
+            }
+        ]
+    };
+
+    // El código JavaScript a continuación es una copia directa del ejemplo,
+    // ya que la estructura de datos y el HTML ahora son idénticos en su funcionamiento.
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            // Lógica para renderizar ejemplos sin tablas, solo título y descripción
+            const examplesHtml = topic.examples.map(ex => {
+                return `
+                    <div class="mb-6 p-4 bg-slate-50 rounded-lg">
+                        <h4 class="font-semibold text-slate-800">${ex.title}</h4>
+                        <p class="text-sm text-slate-600">${ex.description}</p>
+                    </div>
+                `;
+            }).join('');
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Preguntas de Evaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${topic.examples.length > 0 ? `<div class="mt-8"><h3 class="text-xl font-bold text-slate-900 mb-4">Ejemplos Prácticos</h3>${examplesHtml}</div>` : ''}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+
+        const renderQuiz = (topicId, questionIndex) => {
+            const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas de esta sección!</p>`;
+                return;
+            }
+
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente Pregunta</button>
+                </div>
+            `;
+
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                        feedbackEl.classList.remove('hidden');
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                        feedbackEl.classList.remove('hidden');
+                    }
+                    nextBtn.disabled = false;
+                });
+            });
+
+            nextBtn.addEventListener('click', () => {
+                renderQuiz(topicId, questionIndex + 1);
+            });
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+
+        // Render inicial
+        renderNav();
+        renderContent();
+    });
+    </script>
+</body>
+</html>

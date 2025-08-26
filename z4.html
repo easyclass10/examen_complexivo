@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva de Administración Financiera - Ecuador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Guía Interactiva de Administración Financiera I y II</h1>
+            <p class="text-lg text-slate-600 mt-2">Desarrollado por <strong>easyclass</strong></p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                </main>
+        </div>
+    </div>
+<script src="todos.js"></script>
+<script>
+    const studyGuideData = {
+        topics: [
+            // Administración Financiera I
+            {
+                id: 'analisis-financiero',
+                title: 'AF I: Análisis Financiero',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">1. Análisis Financiero Vertical y Horizontal</h2>
+                    <p class="mb-4">El análisis financiero es el proceso de evaluar la posición y el desempeño de una empresa. Los dos métodos fundamentales son:</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong>Análisis Vertical:</strong> Expresa cada partida como un porcentaje de una cifra base (Total de Activos o Ventas Netas).</li>
+                        <li><strong>Análisis Horizontal:</strong> Compara las cifras a lo largo de varios períodos para identificar tendencias.</li>
+                    </ul>
+                `,
+                examples: [
+                    { title: 'Análisis Vertical (Balance)', description: 'El efectivo de una empresa ($12,000) representa el 5% de su Total de Activos ($240,000), mostrando su peso relativo en la estructura de activos.' },
+                    { title: 'Análisis Horizontal (Ventas)', description: 'Las ventas crecieron de $300,000 a $350,000, lo que representa una variación relativa del +16.7%, indicando el crecimiento del negocio.' }
+                ],
+                quiz: [
+                    { question: "Una empresa presenta un Total de Activos de $500,000 y un Pasivo Total de $300,000. En un análisis vertical, ¿qué porcentaje del total representa el Patrimonio?", choices: { a: "60%", b: "167%", c: "40%"}, answer: 'c', explanation: "Patrimonio = Activos - Pasivos = $200,000. Análisis Vertical: $200,000 / $500,000 = 40%." },
+                    { question: "En un análisis vertical del Estado de Resultados, ¿cuál es la cuenta base (100%)?", choices: { a: "Utilidad Neta", b: "Total de Activos", c: "Ventas Netas"}, answer: 'c', explanation: "En el Estado de Resultados, todas las cuentas se expresan como un porcentaje de las Ventas Netas." }
+                ]
+            },
+            {
+                id: 'razones-financieras',
+                title: 'AF I: Razones Financieras',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">2. Cálculo de Razones Financieras</h2>
+                    <p class="mb-4">Las razones o ratios financieros son indicadores que relacionan cuentas para obtener una perspectiva más profunda sobre el desempeño. Se agrupan en: Liquidez, Actividad, Endeudamiento y Rentabilidad.</p>
+                    <div class="chart-container"><canvas id="ratiosChart"></canvas></div>
+                `,
+                examples: [
+                    { title: 'Razón de Liquidez Corriente', description: 'Act. Corriente: $150,000 / Pas. Corriente: $100,000 = 1.5. La empresa tiene $1.50 en activos corrientes por cada $1 de deuda a corto plazo.' },
+                    { title: 'Razón de Endeudamiento', description: 'Pas. Totales: $250,000 / Act. Totales: $400,000 = 62.5%. El 62.5% de los activos está financiado con deuda.' },
+                    { title: 'ROE - Rendimiento sobre el Patrimonio', description: 'Utilidad Neta: $60,000 / Patrimonio: $150,000 = 40%. La empresa genera un rendimiento del 40% para sus accionistas.' }
+                ],
+                quiz: [
+                    { question: "Una empresa tiene Activo Corriente de $300k, Inventario de $120k y Pasivo Corriente de $150k. ¿Cuál es su Prueba Ácida?", choices: { a: "2.0", b: "1.2", c: "0.8"}, answer: 'b', explanation: "Prueba Ácida = (Act. Corr. - Inv.) / Pas. Corr. = ($300k - $120k) / $150k = 1.2." },
+                    { question: "Si el ROE de una empresa es 25% y su razón de endeudamiento (Pasivo/Activo) es 60%, ¿qué se puede afirmar sobre el ROA?", choices: { a: "El ROA es mayor que el ROE.", b: "El ROA es exactamente 25%.", c: "El ROA es menor que el ROE."}, answer: 'c', explanation: "Si hay deuda, el apalancamiento financiero hace que el ROE sea mayor que el ROA. ROA = 10%." }
+                ]
+            },
+            // Administración Financiera II
+            {
+                id: 'fuentes-financiamiento',
+                title: 'AF II: Fuentes de Financiamiento',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">1. Fuentes de Financiamiento</h2>
+                    <p class="mb-4">Son las vías a través de las cuales una empresa obtiene recursos. Se clasifican según su plazo en corto (créditos comerciales, factoring) y largo plazo (emisión de bonos, acciones, leasing).</p>
+                `,
+                examples: [
+                    { title: 'Corto Plazo (Factoring)', description: 'Una empresa vende sus cuentas por cobrar a una institución financiera con un descuento para obtener efectivo inmediato.' },
+                    { title: 'Largo Plazo (Bonos)', description: 'Corporación Favorita C.A. emite obligaciones a 7 años en la Bolsa de Valores de Quito para financiar la apertura de nuevos locales.' }
+                ],
+                quiz: [
+                    { question: "La principal ventaja de financiarse con deuda en lugar de acciones, considerando la normativa tributaria ecuatoriana, es:", choices: { a: "Los pagos de dividendos son deducibles de impuestos.", b: "Los pagos de intereses son un gasto deducible, creando un escudo fiscal.", c: "La deuda no tiene riesgo."}, answer: 'b', explanation: "Los intereses pagados reducen la utilidad imponible, resultando en un menor pago de Impuesto a la Renta." },
+                    { question: "Una desventaja clave de financiarse con la emisión de nuevas acciones comunes es:", choices: { a: "La obligación de pagar intereses fijos.", b: "La dilución del control y de las ganancias para los accionistas existentes.", c: "La fecha de vencimiento fija."}, answer: 'b', explanation: "Al emitir nuevas acciones, la participación porcentual y la ganancia por acción de los dueños actuales disminuyen." }
+                ]
+            },
+             {
+                id: 'valoracion-activos',
+                title: 'AF II: Valoración de Activos',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">2. Valoración de Activos Financieros</h2>
+                    <p class="mb-4">El valor de cualquier activo es el valor presente de los flujos de caja futuros que se espera que genere, descontados a una tasa que refleje su riesgo.</p>
+                `,
+                examples: [
+                    { title: 'Valoración de Bonos', description: 'El valor de un bono es el valor presente de sus pagos de intereses (cupones) más el valor presente de su valor nominal al vencimiento.' },
+                    { title: 'Valoración de Acciones (Modelo Gordon)', description: 'Valora una acción como el valor presente de sus dividendos futuros, asumiendo que estos crecen a una tasa constante.' }
+                ],
+                quiz: [
+                    { question: "Una acción preferente paga un dividendo anual perpetuo de $5. Si la tasa de rendimiento requerida es del 10%, ¿cuál es su valor?", choices: { a: "$50.00", b: "$5.00", c: "$55.00"}, answer: 'a', explanation: "El valor de una perpetuidad es el pago dividido por la tasa de descuento. Valor = $5 / 0.10 = $50." },
+                    { question: "Si las tasas de interés del mercado suben, ¿qué le sucede al precio de un bono existente con tasa de cupón fija?", choices: { a: "El precio del bono sube.", b: "El precio del bono baja.", c: "El precio del bono no cambia."}, answer: 'b', explanation: "Existe una relación inversa entre las tasas de interés y el precio de los bonos. Al subir las tasas, el valor presente de los flujos fijos del bono disminuye." }
+                ]
+            }
+        ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+        let activeChart = null;
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            const examplesHtml = topic.examples.map(ex => `
+                <div class="mb-6 p-4 bg-slate-50 rounded-lg">
+                    <h4 class="font-semibold text-slate-800">${ex.title}</h4>
+                    <p class="text-sm text-slate-600">${ex.description}</p>
+                </div>
+            `).join('');
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Autoevaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${topic.examples.length > 0 ? `<div class="mt-8"><h3 class="text-xl font-bold text-slate-900 mb-4">Ejemplos Prácticos</h3>${examplesHtml}</div>` : ''}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            if (topic.id === 'razones-financieras') {
+                renderRatiosChart();
+            }
+
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+
+        const renderRatiosChart = () => {
+            const chartCanvas = document.getElementById('ratiosChart');
+            if (!chartCanvas) return;
+            if (activeChart) activeChart.destroy();
+            
+            activeChart = new Chart(chartCanvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Liquidez', 'Actividad', 'Endeudamiento', 'Rentabilidad'],
+                    datasets: [{
+                        data: [1, 1, 1, 1],
+                        backgroundColor: ['#3b82f6', '#60a5fa', '#1d4ed8', '#a5b4fc'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        };
+
+        const renderQuiz = (topicId, questionIndex) => {
+            const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas!</p>`;
+                return;
+            }
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente</button>
+                </div>
+            `;
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    }
+                    feedbackEl.classList.remove('hidden');
+                    nextBtn.disabled = false;
+                });
+            });
+            nextBtn.addEventListener('click', () => renderQuiz(topicId, questionIndex + 1));
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+        renderNav();
+        renderContent();
+    });
+</script>
+
+</body>
+</html>

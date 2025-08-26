@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva de Auditoría Forense en Ecuador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 2rem auto;
+            height: 350px;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Guía Interactiva de Auditoría Forense</h1>
+            <p class="text-lg text-slate-600 mt-2">Desarrollado por <strong>easyclass</strong></p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                </main>
+        </div>
+    </div>
+<script src="todos.js"></script>
+<script>
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'fundamentos',
+                title: 'Fundamentos',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Fundamentos de la Auditoría Forense</h2>
+                    <p class="mb-4">La auditoría forense integra contabilidad, investigación y derecho para resolver alegaciones de fraude. Su objetivo es obtener evidencia admisible en un tribunal.</p>
+                    <h4 class="font-semibold text-lg mt-4 mb-2">Tipologías de Fraude (ACFE)</h4>
+                     <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><strong>Corrupción:</strong> Sobornos, conflictos de interés, extorsión.</li>
+                        <li><strong>Apropiación Indebida de Activos:</strong> Robo de efectivo, proveedores fantasma.</li>
+                        <li><strong>Fraude en Estados Financieros:</strong> Manipulación deliberada de la información.</li>
+                    </ul>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "La principal diferencia entre auditoría forense y financiera es que la forense está orientada a:", choices: {a: "Opinar sobre la razonabilidad de los EEFF.", b: "Obtener evidencia para procedimientos judiciales.", c: "Evaluar la eficiencia operativa."}, answer: 'b', explanation: "La auditoría forense se enfoca en la investigación de fraudes y la recolección de evidencia legalmente admisible."}
+                ]
+            },
+            {
+                id: 'proceso',
+                title: 'El Proceso',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">El Proceso de la Investigación Forense</h2>
+                    <p class="mb-4">Una auditoría forense sigue un proceso metodológico estructurado para garantizar el rigor y la validez legal de sus hallazgos.</p>
+                    <ol class="list-decimal list-inside space-y-3">
+                        <li><strong>Planificación:</strong> Se define el objetivo, alcance y se desarrolla una hipótesis de fraude.</li>
+                        <li><strong>Recopilación de Evidencia:</strong> Se recolecta evidencia documental, testimonial y digital bajo estricta <strong>cadena de custodia</strong>.</li>
+                        <li><strong>Análisis:</strong> Se aplican técnicas especializadas para identificar patrones, cuantificar el perjuicio y vincular los hechos con los responsables.</li>
+                        <li><strong>Informe y Presentación:</strong> Se redacta el dictamen pericial y el perito se prepara para defenderlo en la audiencia de juicio.</li>
+                    </ol>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "El procedimiento que garantiza que la evidencia no ha sido alterada desde su recolección hasta su presentación en juicio se llama:", choices: { a: "Cadena de valor.", b: "Cadena de custodia.", c: "Análisis forense."}, answer: 'b', explanation: "La cadena de custodia es un pilar fundamental para garantizar la integridad y admisibilidad de la evidencia." }
+                ]
+            },
+            {
+                id: 'aplicacion',
+                title: 'Aplicación en Ecuador',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Aplicación Práctica en Ecuador</h2>
+                    <p class="mb-4">En Ecuador, el auditor forense opera como perito judicial, calificado por el Consejo de la Judicatura. Su trabajo debe cumplir con las normativas del COIP y COGEP.</p>
+                `,
+                examples: [],
+                quiz: [
+                    { question: "En el marco legal ecuatoriano, un auditor forense que participa en un proceso judicial actúa como un:", choices: { a: "Fiscal.", b: "Juez.", c: "Perito (auxiliar de la justicia)."}, answer: 'c', explanation: "El perito es un experto que aporta sus conocimientos técnicos para ayudar al juez a tomar una decisión informada." }
+                ]
+            }
+        ]
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+        let activeChart = null;
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Autoevaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            if (topic.id === 'fundamentos') {
+                renderComparisonChart();
+            }
+
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+
+        const renderComparisonChart = () => {
+            const chartCanvas = document.getElementById('comparisonChart');
+            if (!chartCanvas) return;
+            if (activeChart) activeChart.destroy();
+            
+            activeChart = new Chart(chartCanvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Objetivo', 'Alcance', 'Enfoque', 'Mentalidad'],
+                    datasets: [{
+                        label: 'Auditoría Forense',
+                        data: [10, 10, 9, 10],
+                        backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                    }, {
+                        label: 'Auditoría Financiera',
+                        data: [6, 7, 6, 7],
+                        backgroundColor: 'rgba(100, 116, 139, 0.7)',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const values = {
+                                        'Auditoría Forense': ['Probar fraude', 'Específico', 'Reactivo', 'Adversarial'],
+                                        'Auditoría Financiera': ['Opinar s/ EEFF', 'General', 'Periódico', 'Escepticismo']
+                                    };
+                                    return values[context.dataset.label][context.dataIndex];
+                                }
+                            }
+                        }
+                    },
+                    scales: { y: { display: false } }
+                }
+            });
+        };
+
+        const renderQuiz = (topicId, questionIndex) => {
+             const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas!</p>`;
+                return;
+            }
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente</button>
+                </div>
+            `;
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    }
+                    feedbackEl.classList.remove('hidden');
+                    nextBtn.disabled = false;
+                });
+            });
+            nextBtn.addEventListener('click', () => renderQuiz(topicId, questionIndex + 1));
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+        renderNav();
+        renderContent();
+    });
+</script>
+
+</body>
+</html>

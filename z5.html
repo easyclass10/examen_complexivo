@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva de Contabilidad Superior I - Ecuador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-left-color: #a5b4fc; /* indigo-300 */
+        }
+        .tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .quiz-choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-choice-btn.correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #16a34a !important;
+        }
+        .quiz-choice-btn.incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #dc2626 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+    
+    <div class="bg-slate-800 text-white p-2 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logotipo de Easyclass" class="h-8">
+                <span class="font-bold text-lg">easyclass</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-email-display" class="font-semibold"></span>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md transition font-semibold">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Guía de Estudio: Contabilidad Superior I</h1>
+            <p class="text-lg text-slate-600 mt-2">Basado en el Marco Conceptual y las NIIF, con enfoque en Ecuador.</p>
+            <p class="text-lg text-slate-600 mt-2">Desarrollado por <strong>easyclass</strong></p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
+                <a href="index.html" class="inline-block w-full bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-slate-300 transition text-center mb-6">
+                    ← Volver al Menú
+                </a>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Temario</h2>
+                <nav id="topic-nav" class="flex flex-col gap-2">
+                    <!-- Los botones de navegación se agregarán aquí con JavaScript -->
+                </nav>
+            </aside>
+            <main id="topic-content" class="w-full md:w-3/4 bg-white p-6 rounded-xl shadow-md">
+                </main>
+        </div>
+    </div>
+<script src="todos.js"></script>
+<script>
+    const studyGuideData = {
+        topics: [
+            {
+                id: 'marco-conceptual',
+                title: '1. Marco Conceptual de las NIIF',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Marco Conceptual</h2>
+                    <p class="mb-4">El Marco Conceptual es el cimiento sobre el que se construyen todas las NIIF. Su propósito es ayudar a desarrollar políticas contables congruentes y a interpretar las normas.</p>
+                    <h4 class="font-semibold text-lg mt-4 mb-2">Características Cualitativas</h4>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><strong>Fundamentales:</strong> Relevancia y Representación Fiel.</li>
+                        <li><strong>De Mejora:</strong> Comparabilidad, Verificabilidad, Oportunidad y Comprensibilidad.</li>
+                    </ul>
+                    <h4 class="font-semibold text-lg mt-4 mb-2">Elementos de los Estados Financieros</h4>
+                    <p><strong>Activo:</strong> Recurso económico controlado por la entidad de sucesos pasados, del que se espera obtener beneficios económicos futuros.</p>
+                    <p><strong>Pasivo:</strong> Obligación presente de la entidad de transferir un recurso económico como resultado de sucesos pasados.</p>
+                    <p><strong>Patrimonio:</strong> Parte residual de los activos, una vez deducidos todos sus pasivos.</p>
+                `,
+                examples: [
+                    { title: 'Activo (Reconocimiento)', description: 'Una empresa desarrolla un software. Para reconocerlo como activo intangible, debe demostrar control (patentes), probabilidad de beneficios futuros (plan de negocio) y que su costo se puede medir fiablemente.' },
+                    { title: 'Pasivo (Provisión)', description: '"El Rosado S.A." es demandado. Sus abogados estiman que es probable que pierda y la salida de dinero sea de $80,000. Debe reconocer una provisión (pasivo) por ese monto.' },
+                    { title: 'Relevancia vs. Representación Fiel', description: 'Un terreno comprado hace 40 años por $1,000 (costo histórico) hoy vale $500,000 (valor razonable). Presentarlo a $1,000 es una representación fiel de su costo, pero poco relevante. Las NIIF buscan el mejor equilibrio.' },
+                    { title: 'Ingreso (Devengo)', description: 'Una aerolínea vende un boleto en diciembre para un vuelo en febrero. En diciembre, reconoce un pasivo ("ingresos diferidos"). El ingreso se reconoce en febrero, cuando presta el servicio.' },
+                    { title: 'Comparabilidad', description: 'Si "Corporación Favorita" usa el método de Promedio Ponderado para inventarios y "Supermercados Santa María" usa PEPS, un analista debe ser consciente de esta diferencia al comparar sus márgenes.' }
+                ],
+                quiz: [
+                    { question: "Una empresa recibe un pedido de un cliente por $200,000, pero aún no ha entregado los bienes. Según el Marco Conceptual, la empresa debería:", choices: { a: "Reconocer un ingreso de $200,000.", b: "Reconocer un activo (cuenta por cobrar) de $200,000.", c: "No reconocer ningún elemento en el estado de situación financiera, ya que la transacción no se ha completado."}, answer: 'c', explanation: "La obligación de desempeño (entrega de bienes) no se ha cumplido. No se puede reconocer ni ingreso ni cuenta por cobrar." },
+                    { question: "¿Cuál de las siguientes es una característica cualitativa fundamental de la información financiera?", choices: { a: "Oportunidad.", b: "Comparabilidad.", c: "Relevancia."}, answer: 'c', explanation: "Relevancia y Representación Fiel son las dos características fundamentales. Las otras son de mejora." }
+                ]
+            },
+            {
+                id: 'nic1',
+                title: '2. NIC 1 (Presentación de EEFF)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">NIC 1 y Secciones 3-6 NIIF Pymes</h2>
+                    <p class="mb-4">La NIC 1 establece los requerimientos para la presentación de los estados financieros (EEFF), asegurando su comparabilidad. Un juego completo de EEFF incluye: Estado de Situación Financiera, Estado del Resultado y ORI, Estado de Cambios en el Patrimonio, Estado de Flujos de Efectivo y Notas.</p>
+                `,
+                examples: [
+                    { title: 'Clasificación Corriente/No Corriente', description: '"Pronaca" tiene un préstamo a 5 años. La porción del capital que vence en los próximos 12 meses se clasifica como Pasivo Corriente. El resto, como Pasivo No Corriente.' },
+                    { title: 'Otro Resultado Integral (ORI)', description: 'Una empresa (NIIF Completas) revalúa un edificio. El incremento de valor no es un ingreso del período, sino un superávit por revaluación en el ORI, acumulado en el patrimonio.' },
+                    { title: 'Nota de Políticas Contables', description: 'En las notas, "Corporación Favorita" debe describir explícitamente su método de valoración de inventarios (ej. "promedio ponderado").' }
+                ],
+                quiz: [
+                    { question: "Según la NIC 1, un activo debe clasificarse como corriente cuando:", choices: { a: "Se espera realizarlo o se pretende venderlo o consumirlo en el ciclo normal de operación de la entidad.", b: "Es un activo intangible.", c: "Su valor supera el millón de dólares."}, answer: 'a', explanation: "Esta es una de las definiciones clave para la clasificación de activos corrientes según la NIC 1." },
+                    { question: "¿Cuál de los siguientes elementos forma parte del 'Otro Resultado Integral' (ORI) bajo NIIF Completas?", choices: { a: "Ingresos por ventas de mercadería.", b: "Ganancias por la revaluación de Propiedad, Planta y Equipo.", c: "Gasto por salarios."}, answer: 'b', explanation: "Las revaluaciones de PPE son un ejemplo clásico de una partida que se reconoce en el ORI." }
+                ]
+            },
+            {
+                id: 'nic2',
+                title: '3. NIC 2 (Inventarios)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">NIC 2 y Sección 13 NIIF Pymes</h2>
+                    <p class="mb-4">La NIC 2 establece que los inventarios deben medirse al <strong>menor valor entre el costo y el valor neto realizable (VNR)</strong>.</p>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li><strong>Costo del Inventario:</strong> Incluye costos de adquisición, de transformación y otros costos necesarios.</li>
+                        <li><strong>VNR:</strong> Precio de venta estimado menos los costos para terminar y vender.</li>
+                        <li><strong>Fórmulas Permitidas:</strong> Identificación Específica, PEPS (FIFO) y Promedio Ponderado. <strong>UEPS (LIFO) está prohibido</strong>.</li>
+                    </ul>
+                `,
+                examples: [
+                    { title: 'Cálculo del VNR', description: 'Un artículo tiene un costo de $80. Su precio de venta es $110. Se incurre en $15 de envío y $11 de comisión. VNR = $110 - $15 - $11 = $84. Como Costo ($80) < VNR ($84), se valora en $80.'},
+                    { title: 'Cálculo con PEPS (FIFO)', description: 'Inventario: 10 u a $10. Compra: 20 u a $12. Se venden 15 u. Costo de Venta = (10 u * $10) + (5 u * $12) = $160.'},
+                    { title: 'Cálculo con Promedio Ponderado', description: 'Con los datos anteriores, el costo promedio es ($100 + $240) / 30 u = $11.33/u. Costo de Venta = 15 u * $11.33 = $169.95.'}
+                ],
+                quiz: [
+                    { question: "Una empresa compra mercadería por $10,000. El IVA del 15% ($1,500) es recuperable. La empresa paga $500 por transporte. ¿Cuál es el costo del inventario?", choices: { a: "$11,500.", b: "$12,000.", c: "$10,500."}, answer: 'c', explanation: "El IVA recuperable no forma parte del costo. Costo = $10,000 (compra) + $500 (transporte) = $10,500." },
+                    { question: "Según la NIC 2, ¿cuál de los siguientes métodos de costeo de inventarios está prohibido?", choices: { a: "Identificación Específica.", b: "PEPS (FIFO).", c: "UEPS (LIFO)."}, answer: 'c', explanation: "UEPS (LIFO) está explícitamente prohibido por las NIIF." }
+                ]
+            },
+             {
+                id: 'nic7',
+                title: '4. NIC 7 (Flujos de Efectivo)',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">NIC 7 y Sección 7 NIIF Pymes</h2>
+                    <p class="mb-4">El Estado de Flujos de Efectivo (EFE) explica la variación en el efectivo y equivalentes, clasificando los flujos en tres actividades: Operación, Inversión y Financiación.</p>
+                `,
+                examples: [
+                    { title: 'Cobros a Clientes (Método Directo)', description: 'Ventas: $500k; Aumento CxC: $20k. Cobros = $500,000 - $20,000 = $480,000.'},
+                    { title: 'Pagos a Proveedores (Método Directo)', description: 'COGS: $300k; Aumento Inv: $10k; Disminución CxP: $5k. Pagos = $300k + $10k + $5k = $315,000.'},
+                    { title: 'Flujo de Inversión', description: 'Se compra maquinaria por $50,000 en efectivo. Flujo Neto de Inversión = -$50,000.'}
+                ],
+                quiz: [
+                    { question: "En el Estado de Flujos de Efectivo, el pago de dividendos a los accionistas se clasifica como una actividad de:", choices: { a: "Operación.", b: "Inversión.", c: "Financiación."}, answer: 'c', explanation: "El pago de dividendos es un retorno de capital a los dueños, por lo que es una actividad de financiación." },
+                    { question: "¿Cuál de las siguientes transacciones es una actividad de inversión?", choices: { a: "La emisión de nuevas acciones.", b: "El pago de un préstamo bancario.", c: "La venta de un edificio de oficinas usado por la empresa."}, answer: 'c', explanation: "Las actividades de inversión se relacionan con la compra y venta de activos a largo plazo." }
+                ]
+            },
+            {
+                id: 'diferencias-niif',
+                title: '5. Diferencias NIIF',
+                explanation: `
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Diferencias entre NIIF Completas y NIIF para Pymes</h2>
+                    <p class="mb-4">Las NIIF para Pymes son una versión simplificada de las NIIF Completas. Las principales diferencias son:</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead><tr class="border-b"><th class="p-2 text-left">Característica</th><th class="p-2 text-left">NIIF Completas</th><th class="p-2 text-left">NIIF para Pymes</th></tr></thead>
+                            <tbody>
+                                <tr class="border-b"><td class="p-2">Costos de Desarrollo</td><td class="p-2">Pueden capitalizarse</td><td class="p-2">Siempre son un gasto</td></tr>
+                                <tr class="border-b"><td class="p-2">Modelo de PPE</td><td class="p-2">Costo o Revaluación</td><td class="p-2">Solo Costo</td></tr>
+                                <tr class="border-b"><td class="p-2">Goodwill</td><td class="p-2">No se amortiza</td><td class="p-2">Se amortiza (máx. 10 años)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `,
+                examples: [
+                    { title: 'Costos de Desarrollo', description: 'Una Pyme gasta $200k en desarrollar un producto; debe registrarlo como gasto. Una gran empresa (NIIF Completas) podría capitalizarlo como activo intangible.'},
+                    { title: 'Revaluación de Edificio', description: 'Una Pyme debe mantener su edificio al costo histórico. Una empresa grande podría revaluarlo a valor de mercado, reconociendo la ganancia en ORI.'},
+                    { title: 'Goodwill', description: 'Una Pyme que adquiere un goodwill de $200k debe amortizarlo (ej. $20k al año por 10 años). Una empresa grande no lo amortiza, pero lo evalúa por deterioro anualmente.'}
+                ],
+                quiz: [
+                    { question: "Bajo NIIF para Pymes, los costos de la fase de desarrollo de un producto deben ser:", choices: { a: "Capitalizados como un activo intangible.", b: "Reconocidos como un gasto cuando se incurren.", c: "Diferidos y reconocidos como gasto en el año de lanzamiento del producto."}, answer: 'b', explanation: "Es una simplificación clave. Tanto investigación como desarrollo se tratan como gastos." },
+                    { question: "¿Cuál de las siguientes opciones de política contable está permitida en NIIF Completas pero no en NIIF para Pymes?", choices: { a: "El método del costo para Propiedad, Planta y Equipo.", b: "El modelo de revaluación para Propiedad, Planta y Equipo.", c: "El método PEPS para inventarios."}, answer: 'b', explanation: "El modelo de revaluación se considera demasiado complejo y costoso para las Pymes." }
+                ]
+            }
+        ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const navContainer = document.getElementById('topic-nav');
+        const contentContainer = document.getElementById('topic-content');
+        let currentTopicId = studyGuideData.topics[0].id;
+
+        const renderNav = () => {
+            navContainer.innerHTML = studyGuideData.topics.map(topic => `
+                <button data-topic-id="${topic.id}" class="tab text-left w-full p-3 rounded-lg border-l-4 border-transparent ${topic.id === currentTopicId ? 'active' : 'bg-slate-200 hover:bg-slate-300'}">
+                    ${topic.title}
+                </button>
+            `).join('');
+        };
+
+        const renderContent = () => {
+            const topic = studyGuideData.topics.find(t => t.id === currentTopicId);
+            if (!topic) return;
+
+            const examplesHtml = topic.examples.map(ex => `
+                <div class="mb-6 p-4 bg-slate-50 rounded-lg">
+                    <h4 class="font-semibold text-slate-800">${ex.title}</h4>
+                    <p class="text-sm text-slate-600">${ex.description}</p>
+                </div>
+            `).join('');
+
+            const quizHtml = topic.quiz.length > 0 ? `
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">Autoevaluación</h3>
+                    <div id="quiz-container" class="p-4 border border-slate-200 rounded-lg"></div>
+                </div>
+            ` : '';
+
+            contentContainer.innerHTML = `
+                <div id="${topic.id}" class="content-section active">
+                    ${topic.explanation}
+                    ${topic.examples.length > 0 ? `<div class="mt-8"><h3 class="text-xl font-bold text-slate-900 mb-4">Ejemplos Prácticos</h3>${examplesHtml}</div>` : ''}
+                    ${quizHtml}
+                </div>
+            `;
+            
+            if (topic.quiz.length > 0) {
+                renderQuiz(topic.id, 0);
+            }
+        };
+
+        const renderQuiz = (topicId, questionIndex) => {
+            const topic = studyGuideData.topics.find(t => t.id === topicId);
+            if (!topic || questionIndex >= topic.quiz.length) {
+                 document.getElementById('quiz-container').innerHTML = `<p class="text-center font-semibold text-green-600">¡Has completado todas las preguntas de esta sección!</p>`;
+                return;
+            }
+
+            const quizContainer = document.getElementById('quiz-container');
+            const questionData = topic.quiz[questionIndex];
+
+            const choicesHtml = Object.entries(questionData.choices).map(([key, value]) => `
+                <button data-choice="${key}" class="quiz-choice-btn w-full text-left p-3 border border-slate-300 rounded-lg hover:bg-slate-100">
+                    <span class="font-bold mr-2">${key.toUpperCase()})</span> ${value}
+                </button>
+            `).join('');
+
+            quizContainer.innerHTML = `
+                <p class="font-semibold mb-4">${questionIndex + 1}. ${questionData.question}</p>
+                <div class="space-y-3">${choicesHtml}</div>
+                <div id="quiz-feedback" class="mt-4 p-4 rounded-lg bg-slate-100 hidden"></div>
+                <div class="text-right mt-4">
+                    <button id="next-q-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-slate-400" disabled>Siguiente Pregunta</button>
+                </div>
+            `;
+
+            attachQuizListeners(topicId, questionIndex);
+        };
+
+        const attachQuizListeners = (topicId, questionIndex) => {
+            const questionData = studyGuideData.topics.find(t => t.id === topicId).quiz[questionIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+            
+            document.querySelectorAll('.quiz-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectedChoice = e.currentTarget.dataset.choice;
+                    document.querySelectorAll('.quiz-choice-btn').forEach(b => b.disabled = true);
+
+                    if (selectedChoice === questionData.answer) {
+                        e.currentTarget.classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-green-700">¡Correcto!</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    } else {
+                        e.currentTarget.classList.add('incorrect');
+                        document.querySelector(`.quiz-choice-btn[data-choice="${questionData.answer}"]`).classList.add('correct');
+                        feedbackEl.innerHTML = `<p class="font-semibold text-red-700">Incorrecto.</p><p class="mt-2 text-sm">${questionData.explanation}</p>`;
+                    }
+                    feedbackEl.classList.remove('hidden');
+                    nextBtn.disabled = false;
+                });
+            });
+
+            nextBtn.addEventListener('click', () => {
+                renderQuiz(topicId, questionIndex + 1);
+            });
+        };
+
+        navContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.tab')) {
+                const topicId = e.target.closest('.tab').dataset.topicId;
+                if (topicId !== currentTopicId) {
+                    currentTopicId = topicId;
+                    renderNav();
+                    renderContent();
+                }
+            }
+        });
+
+        renderNav();
+        renderContent();
+    });
+</script>
+
+</body>
+</html>
