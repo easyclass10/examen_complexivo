@@ -22,10 +22,10 @@ jobs:
 
       # 2. Reemplaza los marcadores de posición con los secrets
       - name: Replace Supabase URL 🔗
-        run: sed -i 's|__SUPABASE_URL_PLACEHOLDER__|${{ secrets.SUPABASE_URL }}|g' config.js
+        run: sed -i 's|__SUPABASE_URL_PLACEHOLDER__|${{ secrets.SUPABASE_URL }}|g' script.js
 
       - name: Replace Supabase Key 🔑
-        run: sed -i 's|__SUPABASE_KEY_PLACEHOLDER__|${{ secrets.SUPABASE_KEY }}|g' config.js
+        run: sed -i 's|__SUPABASE_KEY_PLACEHOLDER__|${{ secrets.SUPABASE_KEY }}|g' script.js
 
       # 3. Prepara los archivos para publicarlos
       - name: Setup Pages 📄
